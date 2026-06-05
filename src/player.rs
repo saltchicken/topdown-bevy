@@ -81,16 +81,18 @@ fn setup_game(
         Player,
         PlayerAnimationState::IdleDown, // Default starting state
         // Slightly slower timer (0.15s) so the breathing isn't overly frantic
-        AnimationTimer(Timer::from_seconds(0.15, TimerMode::Repeating)),
+        AnimationTimer(Timer::from_seconds(0.4, TimerMode::Repeating)),
     ));
 }
 
 fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Transform, &mut PlayerAnimationState, &mut TextureAtlas), With<Player>>,
+    // 1. Add &mut AnimationTimer to the query
+    mut query: Query<(&mut Transform, &mut PlayerAnimationState, &mut TextureAtlas, &mut AnimationTimer), With<Player>>,
     time: Res<Time>,
 ) {
-    let Ok((mut player_transform, mut animation_state, mut atlas)) = query.get_single_mut() else {
+    // 2. Destructure timer out of the query
+    let Ok((mut player_transform, mut animation_state, mut atlas, mut timer)) = query.get_single_mut() else {
         return;
     };
 
@@ -127,6 +129,16 @@ fn player_movement(
     if *animation_state != new_state {
         *animation_state = new_state;
         atlas.index = new_state.indices().0;
+
+        // 3. Adjust the animation speed depending on the new state
+        let duration = match new_state {
+            PlayerAnimationState::IdleDown
+            | PlayerAnimationState::IdleLeft
+            | PlayerAnimationState::IdleUp
+            | PlayerAnimationState::IdleRight => 0.4, // Slower for breathing (Adjust as needed)
+            _ => 0.15, // Normal walk speed
+        };
+        timer.set_duration(std::time::Duration::from_secs_f32(duration));
     }
 
     // Normalize so diagonal movement isn't twice as fast
