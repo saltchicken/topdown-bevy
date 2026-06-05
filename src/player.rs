@@ -23,7 +23,10 @@ struct AnimationTimer(Timer);
 // Tracks the current animation state
 #[derive(Component, PartialEq, Clone, Copy)]
 enum PlayerAnimationState {
-    Idle,
+    IdleDown,
+    IdleUp,
+    IdleLeft,
+    IdleRight,
     WalkDown,
     WalkUp,
     WalkLeft,
@@ -32,13 +35,15 @@ enum PlayerAnimationState {
 
 impl PlayerAnimationState {
     // Defines the (start_index, end_index) for each animation on the sprite sheet
-    // Adjust these numbers based on your specific sprite sheet grid!
     fn indices(&self) -> (usize, usize) {
         match self {
-            Self::Idle => (0, 0),        // Assuming frame 0 is idle
+            Self::IdleDown => (0, 0),    // Row 1, Col 0
             Self::WalkDown => (0, 3),    // Row 1: frames 0 to 3
+            Self::IdleUp => (4, 4),      // Row 2, Col 0
             Self::WalkUp => (4, 7),      // Row 2: frames 4 to 7
+            Self::IdleLeft => (8, 8),    // Row 3, Col 0
             Self::WalkLeft => (8, 11),   // Row 3: frames 8 to 11
+            Self::IdleRight => (12, 12), // Row 4, Col 0
             Self::WalkRight => (12, 15), // Row 4: frames 12 to 15
         }
     }
@@ -72,7 +77,7 @@ fn setup_game(
             index: 0,
         },
         Player,
-        PlayerAnimationState::Idle,
+        PlayerAnimationState::IdleDown, // Default starting state
         // Runs at 10 frames per second (0.1 seconds per frame)
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
     ));
@@ -89,7 +94,14 @@ fn player_movement(
 
     let speed = 300.0;
     let mut direction = Vec3::ZERO;
-    let mut new_state = PlayerAnimationState::Idle;
+    
+    // Default the new_state to the idle animation of whatever direction we are currently facing
+    let mut new_state = match *animation_state {
+        PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown => PlayerAnimationState::IdleDown,
+        PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp => PlayerAnimationState::IdleUp,
+        PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft => PlayerAnimationState::IdleLeft,
+        PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight => PlayerAnimationState::IdleRight,
+    };
 
     // Check X inputs
     if keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft) {
