@@ -6,57 +6,113 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), setup_game)
-            .add_systems(Update, player_movement.run_if(in_state(GameState::Playing)));
+            .add_systems(
+                Update,
+                (player_movement, animate_sprite).run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
 #[derive(Component)]
 struct Player;
 
-fn setup_game(mut commands: Commands) {
+// Tracks the timing for frame updates
+#[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
+
+// Tracks the current animation state
+#[derive(Component, PartialEq, Clone, Copy)]
+enum PlayerAnimationState {
+    Idle,
+    WalkDown,
+    WalkUp,
+    WalkLeft,
+    WalkRight,
+}
+
+impl PlayerAnimationState {
+    // Defines the (start_index, end_index) for each animation on the sprite sheet
+    // Adjust these numbers based on your specific sprite sheet grid!
+    fn indices(&self) -> (usize, usize) {
+        match self {
+            Self::Idle => (0, 0),        // Assuming frame 0 is idle
+            Self::WalkDown => (0, 3),    // Row 1: frames 0 to 3
+            Self::WalkUp => (4, 7),      // Row 2: frames 4 to 7
+            Self::WalkLeft => (8, 11),   // Row 3: frames 8 to 11
+            Self::WalkRight => (12, 15), // Row 4: frames 12 to 15
+        }
+    }
+}
+
+fn setup_game(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
     // Spawn a fresh camera for the active game world
     commands.spawn(Camera2dBundle::default());
 
-    // Spawn our player (a simple blue square)
+    // Load the sprite sheet from the `assets` folder
+    let texture = asset_server.load("player_spritesheet.png");
+
+    // Define the layout of your sprite sheet. 
+    // Here we assume 32x32 pixel frames, 4 columns, and 4 rows.
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+
+    // Spawn our player
     commands.spawn((
         SpriteBundle {
-            sprite: Sprite {
-                color: Color::srgb(0.2, 0.6, 0.8),
-                custom_size: Some(Vec2::new(50.0, 50.0)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            texture,
+            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)), // Scaled 2x for visibility
             ..default()
         },
-        Player, // Tag this entity as the player
+        TextureAtlas {
+            layout: texture_atlas_layout,
+            index: 0,
+        },
+        Player,
+        PlayerAnimationState::Idle,
+        // Runs at 10 frames per second (0.1 seconds per frame)
+        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
     ));
 }
 
 fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut query: Query<(&mut Transform, &mut PlayerAnimationState, &mut TextureAtlas), With<Player>>,
     time: Res<Time>,
 ) {
-    // Ensure we only try to move the player if they actually exist
-    let Ok(mut player_transform) = query.get_single_mut() else {
+    let Ok((mut player_transform, mut animation_state, mut atlas)) = query.get_single_mut() else {
         return;
     };
 
     let speed = 300.0;
     let mut direction = Vec3::ZERO;
+    let mut new_state = PlayerAnimationState::Idle;
 
-    // Check inputs mapping to a 2D top-down grid
-    if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
-        direction.y += 1.0;
-    }
-    if keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown) {
-        direction.y -= 1.0;
-    }
+    // Check X inputs
     if keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft) {
         direction.x -= 1.0;
-    }
-    if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
+        new_state = PlayerAnimationState::WalkLeft;
+    } else if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
         direction.x += 1.0;
+        new_state = PlayerAnimationState::WalkRight;
+    }
+
+    // Check Y inputs (Evaluated after X so Up/Down animation takes priority on diagonal movement)
+    if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
+        direction.y += 1.0;
+        new_state = PlayerAnimationState::WalkUp;
+    } else if keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown) {
+        direction.y -= 1.0;
+        new_state = PlayerAnimationState::WalkDown;
+    }
+
+    // If the animation state changed, immediately update it and snap to the first frame
+    if *animation_state != new_state {
+        *animation_state = new_state;
+        atlas.index = new_state.indices().0;
     }
 
     // Normalize so diagonal movement isn't twice as fast
@@ -66,4 +122,25 @@ fn player_movement(
 
     // Apply movement delta
     player_transform.translation += direction * speed * time.delta_seconds();
+}
+
+fn animate_sprite(
+    time: Res<Time>,
+    mut query: Query<(&PlayerAnimationState, &mut AnimationTimer, &mut TextureAtlas)>,
+) {
+    for (state, mut timer, mut atlas) in &mut query {
+        timer.tick(time.delta());
+        
+        // When the timer goes off, advance the frame
+        if timer.just_finished() {
+            let (start, end) = state.indices();
+            
+            // If we've reached the end of the animation bounds, loop back to the start
+            if atlas.index < start || atlas.index >= end {
+                atlas.index = start;
+            } else {
+                atlas.index += 1;
+            }
+        }
+    }
 }
