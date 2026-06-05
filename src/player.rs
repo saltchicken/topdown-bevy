@@ -24,27 +24,30 @@ struct AnimationTimer(Timer);
 #[derive(Component, PartialEq, Clone, Copy)]
 enum PlayerAnimationState {
     IdleDown,
-    IdleUp,
     IdleLeft,
+    IdleUp,
     IdleRight,
     WalkDown,
-    WalkUp,
     WalkLeft,
+    WalkUp,
     WalkRight,
 }
 
 impl PlayerAnimationState {
-    // Defines the (start_index, end_index) for each animation on the sprite sheet
+    // Defines the (start_index, end_index) based on our 4x8 Action-Sorted rows
     fn indices(&self) -> (usize, usize) {
         match self {
-            Self::IdleDown => (0, 0),    // Row 1, Col 0
-            Self::WalkDown => (0, 3),    // Row 1: frames 0 to 3
-            Self::IdleUp => (4, 4),      // Row 2, Col 0
-            Self::WalkUp => (4, 7),      // Row 2: frames 4 to 7
-            Self::IdleLeft => (8, 8),    // Row 3, Col 0
-            Self::WalkLeft => (8, 11),   // Row 3: frames 8 to 11
-            Self::IdleRight => (12, 12), // Row 4, Col 0
-            Self::WalkRight => (12, 15), // Row 4: frames 12 to 15
+            // -- IDLE ANIMATIONS --
+            Self::IdleDown => (0, 3),    // Row 0
+            Self::IdleLeft => (4, 7),    // Row 1
+            Self::IdleUp => (8, 11),     // Row 2
+            Self::IdleRight => (12, 15), // Row 3
+            
+            // -- WALK ANIMATIONS --
+            Self::WalkDown => (16, 19),  // Row 4
+            Self::WalkLeft => (20, 23),  // Row 5
+            Self::WalkUp => (24, 27),    // Row 6
+            Self::WalkRight => (28, 31), // Row 7
         }
     }
 }
@@ -60,9 +63,8 @@ fn setup_game(
     // Load the sprite sheet from the `assets` folder
     let texture = asset_server.load("player_spritesheet.png");
 
-    // Define the layout of your sprite sheet. 
-    // Here we assume 32x32 pixel frames, 4 columns, and 4 rows.
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
+    // Define the layout of the new 4x8 action-sorted sprite sheet
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 8, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
     // Spawn our player
@@ -78,8 +80,8 @@ fn setup_game(
         },
         Player,
         PlayerAnimationState::IdleDown, // Default starting state
-        // Runs at 10 frames per second (0.1 seconds per frame)
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+        // Slightly slower timer (0.15s) so the breathing isn't overly frantic
+        AnimationTimer(Timer::from_seconds(0.15, TimerMode::Repeating)),
     ));
 }
 
@@ -121,7 +123,7 @@ fn player_movement(
         new_state = PlayerAnimationState::WalkDown;
     }
 
-    // If the animation state changed, immediately update it and snap to the first frame
+    // If the animation state changed, immediately update it and snap to the first frame of that cycle
     if *animation_state != new_state {
         *animation_state = new_state;
         atlas.index = new_state.indices().0;
