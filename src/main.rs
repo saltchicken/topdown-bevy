@@ -13,16 +13,13 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .init_state::<GameState>()
-        
         // Main Menu Systems
         .add_systems(OnEnter(GameState::MainMenu), setup_menu)
         .add_systems(Update, button_system.run_if(in_state(GameState::MainMenu)))
         .add_systems(OnExit(GameState::MainMenu), cleanup_menu)
-        
         // In-Game Systems
         .add_systems(OnEnter(GameState::Playing), setup_game)
         .add_systems(Update, player_movement.run_if(in_state(GameState::Playing)))
-        
         .run();
 }
 
@@ -143,7 +140,7 @@ fn player_movement(
     let Ok(mut player_transform) = query.get_single_mut() else {
         return;
     };
-    
+
     let speed = 300.0;
     let mut direction = Vec3::ZERO;
 
