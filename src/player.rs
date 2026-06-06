@@ -13,14 +13,19 @@ impl Plugin for PlayerPlugin {
     }
 }
 
+// Holds the texture handles so we can dynamically swap them on the player entity
+#[derive(Resource)]
+struct PlayerAnimations {
+    idle: Handle<Image>,
+    walk: Handle<Image>,
+}
+
 #[derive(Component)]
 struct Player;
 
-// Tracks the timing for frame updates
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
 
-// Tracks the current animation state
 #[derive(Component, PartialEq, Clone, Copy)]
 enum PlayerAnimationState {
     IdleDown,
@@ -34,21 +39,22 @@ enum PlayerAnimationState {
 }
 
 impl PlayerAnimationState {
-    // Defines the (start_index, end_index) based on our 4x8 Action-Sorted rows
+    // Both 4x4 sprite sheets follow the exact same layout mappings now
     fn indices(&self) -> (usize, usize) {
         match self {
-            // -- IDLE ANIMATIONS --
-            Self::IdleDown => (0, 3),    // Row 0
-            Self::IdleLeft => (4, 7),    // Row 1
-            Self::IdleUp => (8, 11),     // Row 2
-            Self::IdleRight => (12, 15), // Row 3
-            
-            // -- WALK ANIMATIONS --
-            Self::WalkDown => (16, 19),  // Row 4
-            Self::WalkLeft => (20, 23),  // Row 5
-            Self::WalkUp => (24, 27),    // Row 6
-            Self::WalkRight => (28, 31), // Row 7
+            Self::IdleDown | Self::WalkDown => (0, 3),    // Row 0
+            Self::IdleLeft | Self::WalkLeft => (4, 7),    // Row 1
+            Self::IdleUp | Self::WalkUp => (8, 11),       // Row 2
+            Self::IdleRight | Self::WalkRight => (12, 15),// Row 3
         }
+    }
+
+    // Helper function to figure out if we are currently walking
+    fn is_walk(&self) -> bool {
+        matches!(
+            self,
+            Self::WalkDown | Self::WalkLeft | Self::WalkUp | Self::WalkRight
+        )
     }
 }
 
@@ -57,49 +63,58 @@ fn setup_game(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    // Spawn a fresh camera for the active game world
     commands.spawn(Camera2dBundle::default());
 
-    // Load the sprite sheet from the `assets` folder
-    let texture = asset_server.load("player_spritesheet.png");
+    // Load both sheets
+    let idle_texture = asset_server.load("player_idle.png");
+    let walk_texture = asset_server.load("player_walk.png");
 
-    // Define the layout of the new 4x8 action-sorted sprite sheet
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 8, None, None);
-    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    // Since both sheets are 4x4, we only need to define one layout and can reuse it
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
+    let layout_handle = texture_atlas_layouts.add(layout);
 
-    // Spawn our player
+    // Save the image handles in a resource
+    commands.insert_resource(PlayerAnimations {
+        idle: idle_texture.clone(),
+        walk: walk_texture,
+    });
+
+    // Spawn the player with the idle texture by default
     commands.spawn((
         SpriteBundle {
-            texture,
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)), // Scaled 2x for visibility
+            texture: idle_texture,
+            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
             ..default()
         },
         TextureAtlas {
-            layout: texture_atlas_layout,
+            layout: layout_handle,
             index: 0,
         },
         Player,
-        PlayerAnimationState::IdleDown, // Default starting state
-        // Slightly slower timer (0.15s) so the breathing isn't overly frantic
+        PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(0.4, TimerMode::Repeating)),
     ));
 }
 
 fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    // 1. Add &mut AnimationTimer to the query
-    mut query: Query<(&mut Transform, &mut PlayerAnimationState, &mut TextureAtlas, &mut AnimationTimer), With<Player>>,
+    mut query: Query<(
+        &mut Transform,
+        &mut PlayerAnimationState,
+        &mut TextureAtlas,
+        &mut AnimationTimer,
+        &mut Handle<Image>, // Grab the image handle directly off the entity so we can mutate it
+    ), With<Player>>,
+    animations: Res<PlayerAnimations>,
     time: Res<Time>,
 ) {
-    // 2. Destructure timer out of the query
-    let Ok((mut player_transform, mut animation_state, mut atlas, mut timer)) = query.get_single_mut() else {
+    let Ok((mut player_transform, mut animation_state, mut atlas, mut timer, mut texture)) = query.get_single_mut() else {
         return;
     };
 
     let speed = 300.0;
     let mut direction = Vec3::ZERO;
     
-    // Default the new_state to the idle animation of whatever direction we are currently facing
     let mut new_state = match *animation_state {
         PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown => PlayerAnimationState::IdleDown,
         PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp => PlayerAnimationState::IdleUp,
@@ -116,7 +131,7 @@ fn player_movement(
         new_state = PlayerAnimationState::WalkRight;
     }
 
-    // Check Y inputs (Evaluated after X so Up/Down animation takes priority on diagonal movement)
+    // Check Y inputs
     if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
         direction.y += 1.0;
         new_state = PlayerAnimationState::WalkUp;
@@ -125,28 +140,33 @@ fn player_movement(
         new_state = PlayerAnimationState::WalkDown;
     }
 
-    // If the animation state changed, immediately update it and snap to the first frame of that cycle
     if *animation_state != new_state {
+        // Swap out the underlying sprite sheet image if we are crossing action boundaries
+        if animation_state.is_walk() != new_state.is_walk() {
+            if new_state.is_walk() {
+                *texture = animations.walk.clone();
+            } else {
+                *texture = animations.idle.clone();
+            }
+        }
+
         *animation_state = new_state;
         atlas.index = new_state.indices().0;
 
-        // 3. Adjust the animation speed depending on the new state
         let duration = match new_state {
             PlayerAnimationState::IdleDown
             | PlayerAnimationState::IdleLeft
             | PlayerAnimationState::IdleUp
-            | PlayerAnimationState::IdleRight => 0.4, // Slower for breathing (Adjust as needed)
-            _ => 0.15, // Normal walk speed
+            | PlayerAnimationState::IdleRight => 0.4,
+            _ => 0.15,
         };
         timer.set_duration(std::time::Duration::from_secs_f32(duration));
     }
 
-    // Normalize so diagonal movement isn't twice as fast
     if direction.length() > 0.0 {
         direction = direction.normalize();
     }
 
-    // Apply movement delta
     player_transform.translation += direction * speed * time.delta_seconds();
 }
 
@@ -157,11 +177,9 @@ fn animate_sprite(
     for (state, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
         
-        // When the timer goes off, advance the frame
         if timer.just_finished() {
             let (start, end) = state.indices();
             
-            // If we've reached the end of the animation bounds, loop back to the start
             if atlas.index < start || atlas.index >= end {
                 atlas.index = start;
             } else {
