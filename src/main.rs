@@ -1,5 +1,6 @@
 mod loading;
 mod menu;
+mod pause_menu;
 mod player;
 mod state;
 mod utils;
@@ -7,8 +8,9 @@ mod utils;
 use bevy::prelude::*;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
+use pause_menu::PauseMenuPlugin;
 use player::PlayerPlugin;
-use state::GameState;
+use state::{GameState, PauseState};
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -30,6 +32,7 @@ fn main() {
             ..default()
         }))
         .init_state::<GameState>()
-        .add_plugins((LoadingPlugin, MenuPlugin, PlayerPlugin))
+        .init_state::<PauseState>()
+        .add_plugins((LoadingPlugin, MenuPlugin, PauseMenuPlugin, PlayerPlugin))
         .run();
 }
