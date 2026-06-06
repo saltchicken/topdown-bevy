@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use crate::core::state::GameState;
 use crate::core::utils::despawn_screen;
+use bevy::prelude::*;
 
 pub struct MenuPlugin;
 
@@ -84,4 +84,3 @@ fn button_system(
         }
     }
 }
-

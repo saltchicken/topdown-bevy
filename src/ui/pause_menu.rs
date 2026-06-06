@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use crate::core::state::{GameState, PauseState};
 use crate::core::utils::despawn_screen;
+use bevy::prelude::*;
 
 pub struct PauseMenuPlugin;
 
@@ -8,8 +8,14 @@ impl Plugin for PauseMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, toggle_pause.run_if(in_state(GameState::Playing)))
             .add_systems(OnEnter(PauseState::Paused), setup_pause_menu)
-            .add_systems(Update, resume_button_system.run_if(in_state(PauseState::Paused)))
-            .add_systems(OnExit(PauseState::Paused), despawn_screen::<PauseMenuEntity>);
+            .add_systems(
+                Update,
+                resume_button_system.run_if(in_state(PauseState::Paused)),
+            )
+            .add_systems(
+                OnExit(PauseState::Paused),
+                despawn_screen::<PauseMenuEntity>,
+            );
     }
 }
 

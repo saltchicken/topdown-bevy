@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use bevy_asset_loader::prelude::*;
 use crate::core::state::GameState;
 use crate::core::utils::despawn_screen;
+use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
 pub struct LoadingPlugin;
 
@@ -45,7 +45,7 @@ fn setup_loading_screen(mut commands: Commands) {
                 ..default()
             },
             BackgroundColor(BG_COLOR), // Dark background
-            LoadingUI, // Tag it for cleanup
+            LoadingUI,                 // Tag it for cleanup
         ))
         .with_children(|parent| {
             parent.spawn((
@@ -58,4 +58,3 @@ fn setup_loading_screen(mut commands: Commands) {
             ));
         });
 }
-

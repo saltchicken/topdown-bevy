@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-use crate::entities::player::Player;
 use crate::core::state::GameplaySet;
+use crate::entities::player::Player;
+use bevy::prelude::*;
 
 pub struct CameraPlugin;
 
@@ -26,19 +26,18 @@ fn camera_follow(
     let Ok(mut camera_transform) = camera_query.single_mut() else {
         return;
     };
-    
+
     let Ok(player_transform) = player_query.single() else {
         return;
     };
 
     let target_pos = player_transform.translation;
-    
+
     // Preserve the camera's Z position while setting the XY target
     let target = target_pos.truncate().extend(camera_transform.translation.z);
-    
-    let decay_rate = 2.0; 
-    camera_transform.translation = camera_transform.translation.lerp(
-        target, 
-        1.0 - f32::exp(-decay_rate * time.delta_secs())
-    );   
+
+    let decay_rate = 2.0;
+    camera_transform.translation = camera_transform
+        .translation
+        .lerp(target, 1.0 - f32::exp(-decay_rate * time.delta_secs()));
 }

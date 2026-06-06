@@ -1,10 +1,10 @@
+use crate::core::state::{GameState, GameplaySet, PauseState};
+use crate::core::utils::despawn_screen;
+use crate::render::y_sort::YSort;
+use crate::render::z_layers;
+use crate::ui::loading::GameAssets;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use crate::core::state::{GameState, GameplaySet, PauseState};
-use crate::ui::loading::GameAssets;
-use crate::core::utils::despawn_screen;
-use crate::render::z_layers;
-use crate::render::y_sort::YSort;
 
 #[derive(Resource)]
 pub struct PlayerConfig {
@@ -47,12 +47,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (
-                    player_movement,
-                    player_animation_controller,
-                    animate_sprite,
-                )
-                    .in_set(GameplaySet),
+                (player_movement, player_animation_controller, animate_sprite).in_set(GameplaySet),
             );
     }
 }
@@ -85,10 +80,10 @@ impl PlayerAnimationState {
     // Both 4x4 sprite sheets follow the exact same layout mappings
     fn indices(&self) -> (usize, usize) {
         match self {
-            Self::IdleDown | Self::WalkDown => (0, 3),    // Row 0
-            Self::IdleLeft | Self::WalkLeft => (4, 7),    // Row 1
-            Self::IdleUp | Self::WalkUp => (8, 11),       // Row 2
-            Self::IdleRight | Self::WalkRight => (12, 15),// Row 3
+            Self::IdleDown | Self::WalkDown => (0, 3),     // Row 0
+            Self::IdleLeft | Self::WalkLeft => (4, 7),     // Row 1
+            Self::IdleUp | Self::WalkUp => (8, 11),        // Row 2
+            Self::IdleRight | Self::WalkRight => (12, 15), // Row 3
         }
     }
 
@@ -107,7 +102,13 @@ fn setup_game(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     config: Res<PlayerConfig>,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(config.sprite_size, config.sprite_size), config.sprite_cols, config.sprite_rows, None, None);
+    let layout = TextureAtlasLayout::from_grid(
+        UVec2::new(config.sprite_size, config.sprite_size),
+        config.sprite_cols,
+        config.sprite_rows,
+        None,
+        None,
+    );
     let player_layout = texture_atlas_layouts.add(layout);
 
     // Spawn the player with the idle texture by default
@@ -124,7 +125,10 @@ fn setup_game(
         Player,
         YSort(z_layers::ENTITIES),
         PlayerAnimationState::IdleDown,
-        AnimationTimer(Timer::from_seconds(config.idle_frame_duration, TimerMode::Repeating)),
+        AnimationTimer(Timer::from_seconds(
+            config.idle_frame_duration,
+            TimerMode::Repeating,
+        )),
         ActionState::<PlayerAction>::default(),
         InputMap::default()
             .with_dual_axis(PlayerAction::Move, VirtualDPad::wasd())
@@ -143,7 +147,8 @@ fn player_movement(
     time: Res<Time>,
     config: Res<PlayerConfig>,
 ) {
-    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.single_mut() else {
+    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.single_mut()
+    else {
         return;
     };
 
@@ -196,11 +201,7 @@ fn player_movement(
 // Visuals Only: Listens for changes to the animation state and updates visual components
 fn player_animation_controller(
     mut query: Query<
-        (
-            &PlayerAnimationState,
-            &mut Sprite,
-            &mut AnimationTimer,
-        ),
+        (&PlayerAnimationState, &mut Sprite, &mut AnimationTimer),
         (With<Player>, Changed<PlayerAnimationState>),
     >,
     animations: Res<GameAssets>,
