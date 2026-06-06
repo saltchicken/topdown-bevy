@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::state::GameState;
+use crate::loading::GameAssets;
 
 pub struct PlayerPlugin;
 
@@ -16,13 +17,6 @@ impl Plugin for PlayerPlugin {
                     .run_if(in_state(GameState::Playing)),
             );
     }
-}
-
-// Holds the texture handles so we can dynamically swap them on the player entity
-#[derive(Resource)]
-struct PlayerAnimations {
-    idle: Handle<Image>,
-    walk: Handle<Image>,
 }
 
 #[derive(Component)]
@@ -67,36 +61,17 @@ impl PlayerAnimationState {
 
 fn setup_game(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    game_assets: Res<GameAssets>,
 ) {
-    // Note: It is recommended to move camera setup to a main Startup system 
-    // to prevent spawning multiple cameras if you re-enter this state.
-    commands.spawn(Camera2dBundle::default());
-
-    // Load both sheets
-    let idle_texture = asset_server.load("player_idle.png");
-    let walk_texture = asset_server.load("player_walk.png");
-
-    // Since both sheets are 4x4, we only need to define one layout and can reuse it
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
-    let layout_handle = texture_atlas_layouts.add(layout);
-
-    // Save the image handles in a resource
-    commands.insert_resource(PlayerAnimations {
-        idle: idle_texture.clone(),
-        walk: walk_texture,
-    });
-
     // Spawn the player with the idle texture by default
     commands.spawn((
         SpriteBundle {
-            texture: idle_texture,
+            texture: game_assets.player_idle.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
             ..default()
         },
         TextureAtlas {
-            layout: layout_handle,
+            layout: game_assets.player_layout.clone(),
             index: 0,
         },
         Player { speed: 300.0 }, // Initialize player speed here
@@ -173,14 +148,14 @@ fn player_animation_controller(
         ),
         (With<Player>, Changed<PlayerAnimationState>),
     >,
-    animations: Res<PlayerAnimations>,
+    animations: Res<GameAssets>,
 ) {
     for (state, mut atlas, mut timer, mut texture) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
         if state.is_walk() {
-            *texture = animations.walk.clone();
+            *texture = animations.player_walk.clone();
         } else {
-            *texture = animations.idle.clone();
+            *texture = animations.player_idle.clone();
         }
 
         // Snap to the correct starting frame for the new state

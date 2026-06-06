@@ -19,9 +19,6 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 struct MenuEntity;
 
 fn setup_menu(mut commands: Commands) {
-    // We need a camera to see the UI
-    commands.spawn((Camera2dBundle::default(), MenuEntity));
-
     // Spawn the UI Layout
     commands
         .spawn((
