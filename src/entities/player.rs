@@ -58,7 +58,7 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {

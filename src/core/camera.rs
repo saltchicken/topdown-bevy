@@ -1,0 +1,45 @@
+use bevy::prelude::*;
+use crate::entities::player::Player;
+use crate::core::state::GameplaySet;
+
+pub struct CameraPlugin;
+
+impl Plugin for CameraPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup_camera)
+            .add_systems(Update, camera_follow.in_set(GameplaySet));
+    }
+}
+
+#[derive(Component)]
+pub struct MainCamera;
+
+fn setup_camera(mut commands: Commands) {
+    commands.spawn((Camera2dBundle::default(), MainCamera));
+}
+
+fn camera_follow(
+    mut camera_query: Query<&mut Transform, With<MainCamera>>,
+    player_query: Query<&Transform, (With<Player>, Without<MainCamera>)>,
+    time: Res<Time>,
+) {
+    let Ok(mut camera_transform) = camera_query.get_single_mut() else {
+        return;
+    };
+    
+    let Ok(player_transform) = player_query.get_single() else {
+        return;
+    };
+
+    let target_pos = player_transform.translation;
+    
+    // Preserve the camera's Z position while setting the XY target
+    let target = target_pos.truncate().extend(camera_transform.translation.z);
+    
+    // 5.0 is an arbitrary factor for the lerp speed. Higher = snappier, lower = smoother.
+    let lerp_speed = 5.0; 
+    
+    camera_transform.translation = camera_transform
+        .translation
+        .lerp(target, time.delta_seconds() * lerp_speed);
+}
