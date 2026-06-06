@@ -1,0 +1,9 @@
+PlayerConfig(
+    speed: 300.0,
+    scale: 2.0,
+    sprite_size: 32,
+    sprite_cols: 4,
+    sprite_rows: 4,
+    idle_frame_duration: 0.4,
+    walk_frame_duration: 0.15,
+)

@@ -18,7 +18,12 @@ impl Plugin for MapPlugin {
 pub struct MapEntity;
 
 fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
-    let tilemap_size = TilemapSize { x: 32, y: 32 };
+    let map_data = include_str!("../../assets/data/map.txt");
+    let lines: Vec<&str> = map_data.lines().filter(|l| !l.is_empty()).collect();
+    let size_y = lines.len() as u32;
+    let size_x = if size_y > 0 { lines[0].len() as u32 } else { 0 };
+
+    let tilemap_size = TilemapSize { x: size_x, y: size_y };
     let tile_size = TilemapTileSize { x: 32.0, y: 32.0 };
     let grid_size = tile_size.into();
     let map_type = TilemapType::Square;
@@ -26,14 +31,26 @@ fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
     let tilemap_entity = commands.spawn(MapEntity).id();
     let mut tile_storage = TileStorage::empty(tilemap_size);
 
-    for x in 0..tilemap_size.x {
-        for y in 0..tilemap_size.y {
+    for (row, line) in lines.iter().enumerate() {
+        let y = size_y - 1 - row as u32; // Reverse Y so it draws top-down properly
+        for (col, ch) in line.chars().enumerate() {
+            let x = col as u32;
             let tile_pos = TilePos { x, y };
+            
+            let texture_index = match ch {
+                '.' => 0, // Grass
+                ',' => 1, // Dirt
+                '~' => 2, // Water
+                '#' => 3, // Stone
+                _ => 0,
+            };
+
             let tile_entity = commands
                 .spawn((
                     TileBundle {
                         position: tile_pos,
                         tilemap_id: TilemapId(tilemap_entity),
+                        texture_index: TileTextureIndex(texture_index),
                         ..Default::default()
                     },
                     MapEntity,

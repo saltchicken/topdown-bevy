@@ -7,8 +7,9 @@ use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
+use serde::Deserialize;
 
-#[derive(Resource)]
+#[derive(Resource, Deserialize)]
 pub struct PlayerConfig {
     pub speed: f32,
     pub scale: f32,
@@ -21,15 +22,8 @@ pub struct PlayerConfig {
 
 impl Default for PlayerConfig {
     fn default() -> Self {
-        Self {
-            speed: 300.0,
-            scale: 2.0,
-            sprite_size: 32,
-            sprite_cols: 4,
-            sprite_rows: 4,
-            idle_frame_duration: 0.4,
-            walk_frame_duration: 0.15,
-        }
+        let config_str = include_str!("../../assets/data/player.ron");
+        ron::from_str(config_str).expect("Failed to parse player.ron configuration")
     }
 }
 

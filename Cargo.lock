@@ -358,6 +358,8 @@ dependencies = [
  "bevy_asset_loader",
  "bevy_ecs_tilemap",
  "leafwing-input-manager",
+ "ron",
+ "serde",
 ]
 
 [[package]]
