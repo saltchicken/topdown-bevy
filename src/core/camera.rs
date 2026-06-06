@@ -36,10 +36,9 @@ fn camera_follow(
     // Preserve the camera's Z position while setting the XY target
     let target = target_pos.truncate().extend(camera_transform.translation.z);
     
-    // 5.0 is an arbitrary factor for the lerp speed. Higher = snappier, lower = smoother.
-    let lerp_speed = 5.0; 
-    
-    camera_transform.translation = camera_transform
-        .translation
-        .lerp(target, time.delta_secs() * lerp_speed);
+    let decay_rate = 2.0; 
+    camera_transform.translation = camera_transform.translation.lerp(
+        target, 
+        1.0 - f32::exp(-decay_rate * time.delta_secs())
+    );   
 }
