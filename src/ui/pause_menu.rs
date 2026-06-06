@@ -1,6 +1,8 @@
+use crate::core::input::GameAction;
 use crate::core::state::{GameState, PauseState};
 use crate::core::utils::despawn_screen;
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::*;
 
 pub struct PauseMenuPlugin;
 
@@ -31,11 +33,11 @@ const MENU_BG_COLOR: Color = Color::srgba(0.0, 0.0, 0.0, 0.8);
 struct PauseMenuEntity;
 
 fn toggle_pause(
-    keyboard: Res<ButtonInput<KeyCode>>,
+    action_state: Res<ActionState<GameAction>>,
     state: Res<State<PauseState>>,
     mut next_state: ResMut<NextState<PauseState>>,
 ) {
-    if keyboard.just_pressed(KeyCode::Escape) {
+    if action_state.just_pressed(&GameAction::TogglePause) {
         match state.get() {
             PauseState::Running => next_state.set(PauseState::Paused),
             PauseState::Paused => next_state.set(PauseState::Running),

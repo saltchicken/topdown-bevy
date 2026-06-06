@@ -1,3 +1,4 @@
+use crate::core::input::GameAction;
 use crate::core::state::{GameState, GameplaySet, PauseState};
 use crate::core::utils::despawn_screen;
 use crate::render::y_sort::YSort;
@@ -36,7 +37,6 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>()
-            .add_plugins(InputManagerPlugin::<PlayerAction>::default())
             .configure_sets(
                 Update,
                 GameplaySet
@@ -54,12 +54,6 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Component)]
 pub struct Player;
-
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
-pub enum PlayerAction {
-    #[actionlike(DualAxis)]
-    Move,
-}
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
@@ -129,10 +123,6 @@ fn setup_game(
             config.idle_frame_duration,
             TimerMode::Repeating,
         )),
-        ActionState::<PlayerAction>::default(),
-        InputMap::default()
-            .with_dual_axis(PlayerAction::Move, VirtualDPad::wasd())
-            .with_dual_axis(PlayerAction::Move, VirtualDPad::arrow_keys()),
     ));
 }
 
@@ -142,17 +132,15 @@ fn player_movement(
         &Player,
         &mut Transform,
         &mut PlayerAnimationState,
-        &ActionState<PlayerAction>,
     )>,
+    action_state: Res<ActionState<GameAction>>,
     time: Res<Time>,
     config: Res<PlayerConfig>,
 ) {
-    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.single_mut()
+    let Ok((_player, mut player_transform, mut animation_state)) = query.single_mut()
     else {
         return;
     };
-
-    let mut direction = Vec3::ZERO;
 
     // Default to idle based on current facing direction
     let mut new_state = match *animation_state {
@@ -168,8 +156,8 @@ fn player_movement(
         }
     };
 
-    let axis = action_state.clamped_axis_pair(&PlayerAction::Move);
-    direction = axis.extend(0.0);
+    let axis = action_state.clamped_axis_pair(&GameAction::Move);
+    let mut direction = axis.extend(0.0);
 
     if direction != Vec3::ZERO {
         if direction.x.abs() > direction.y.abs() {
