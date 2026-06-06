@@ -1,5 +1,6 @@
 pub const Y_SORT_MULTIPLIER: f32 = 0.0001;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZLayer {
     Background,
