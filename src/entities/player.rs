@@ -6,19 +6,37 @@ use crate::core::utils::despawn_screen;
 use crate::render::z_layers;
 use crate::render::y_sort::YSort;
 
-const PLAYER_SPEED: f32 = 300.0;
-const PLAYER_SCALE: f32 = 2.0;
-const SPRITE_SIZE: u32 = 32;
-const SPRITE_COLS: u32 = 4;
-const SPRITE_ROWS: u32 = 4;
-const IDLE_FRAME_DURATION: f32 = 0.4;
-const WALK_FRAME_DURATION: f32 = 0.15;
+#[derive(Resource)]
+pub struct PlayerConfig {
+    pub speed: f32,
+    pub scale: f32,
+    pub sprite_size: u32,
+    pub sprite_cols: u32,
+    pub sprite_rows: u32,
+    pub idle_frame_duration: f32,
+    pub walk_frame_duration: f32,
+}
+
+impl Default for PlayerConfig {
+    fn default() -> Self {
+        Self {
+            speed: 300.0,
+            scale: 2.0,
+            sprite_size: 32,
+            sprite_cols: 4,
+            sprite_rows: 4,
+            idle_frame_duration: 0.4,
+            walk_frame_duration: 0.15,
+        }
+    }
+}
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
+        app.init_resource::<PlayerConfig>()
+            .add_plugins(InputManagerPlugin::<PlayerAction>::default())
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
@@ -35,9 +53,7 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-struct Player {
-    pub speed: f32,
-}
+struct Player;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
@@ -83,25 +99,26 @@ fn setup_game(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    config: Res<PlayerConfig>,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(SPRITE_SIZE, SPRITE_SIZE), SPRITE_COLS, SPRITE_ROWS, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(config.sprite_size, config.sprite_size), config.sprite_cols, config.sprite_rows, None, None);
     let player_layout = texture_atlas_layouts.add(layout);
 
     // Spawn the player with the idle texture by default
     commands.spawn((
         SpriteBundle {
             texture: game_assets.player_idle.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(PLAYER_SCALE)),
+            transform: Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(config.scale)),
             ..default()
         },
         TextureAtlas {
             layout: player_layout,
             index: 0,
         },
-        Player { speed: PLAYER_SPEED }, // Initialize player speed here
+        Player,
         YSort(z_layers::ENTITIES),
         PlayerAnimationState::IdleDown,
-        AnimationTimer(Timer::from_seconds(IDLE_FRAME_DURATION, TimerMode::Repeating)),
+        AnimationTimer(Timer::from_seconds(config.idle_frame_duration, TimerMode::Repeating)),
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map: InputMap::new([
@@ -121,8 +138,9 @@ fn player_movement(
         &ActionState<PlayerAction>,
     )>,
     time: Res<Time>,
+    config: Res<PlayerConfig>,
 ) {
-    let Ok((player, mut player_transform, mut animation_state, action_state)) = query.get_single_mut() else {
+    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.get_single_mut() else {
         return;
     };
 
@@ -170,7 +188,7 @@ fn player_movement(
     // Apply movement
     direction = direction.normalize_or_zero();
 
-    player_transform.translation += direction * player.speed * time.delta_seconds();
+    player_transform.translation += direction * config.speed * time.delta_seconds();
 }
 
 // Visuals Only: Listens for changes to the animation state and updates visual components
@@ -185,6 +203,7 @@ fn player_animation_controller(
         (With<Player>, Changed<PlayerAnimationState>),
     >,
     animations: Res<GameAssets>,
+    config: Res<PlayerConfig>,
 ) {
     for (state, mut atlas, mut timer, mut texture) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
@@ -202,8 +221,8 @@ fn player_animation_controller(
             PlayerAnimationState::IdleDown
             | PlayerAnimationState::IdleLeft
             | PlayerAnimationState::IdleUp
-            | PlayerAnimationState::IdleRight => IDLE_FRAME_DURATION,
-            _ => WALK_FRAME_DURATION,
+            | PlayerAnimationState::IdleRight => config.idle_frame_duration,
+            _ => config.walk_frame_duration,
         };
         timer.set_duration(std::time::Duration::from_secs_f32(duration));
     }
