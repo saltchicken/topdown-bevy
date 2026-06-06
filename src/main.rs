@@ -6,7 +6,7 @@ mod ui;
 use bevy::prelude::*;
 use core::camera::CameraPlugin;
 use core::input::InputPlugin;
-use core::state::{GameState, PauseState};
+use core::state::StatePlugin;
 use entities::player::PlayerPlugin;
 use render::y_sort::YSortPlugin;
 use ui::loading::LoadingPlugin;
@@ -27,9 +27,8 @@ fn main() {
             }),
             ..default()
         }))
-        .init_state::<GameState>()
-        .init_state::<PauseState>()
         .add_plugins((
+            StatePlugin,
             CameraPlugin,
             InputPlugin,
             LoadingPlugin,

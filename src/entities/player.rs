@@ -1,5 +1,5 @@
 use crate::core::input::GameAction;
-use crate::core::state::{GameState, GameplaySet, PauseState};
+use crate::core::state::{GameState, GameplaySet};
 use crate::core::utils::despawn_screen;
 use crate::render::y_sort::YSort;
 use crate::render::z_layers;
@@ -37,12 +37,6 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>()
-            .configure_sets(
-                Update,
-                GameplaySet
-                    .run_if(in_state(GameState::Playing))
-                    .run_if(in_state(PauseState::Running)),
-            )
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
