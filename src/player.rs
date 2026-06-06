@@ -39,10 +39,7 @@ struct Player {
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
-    Up,
-    Down,
-    Left,
-    Right,
+    Move,
 }
 
 #[derive(Component, Deref, DerefMut)]
@@ -105,14 +102,8 @@ fn setup_game(
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map: InputMap::new([
-                (PlayerAction::Left, KeyCode::KeyA),
-                (PlayerAction::Left, KeyCode::ArrowLeft),
-                (PlayerAction::Right, KeyCode::KeyD),
-                (PlayerAction::Right, KeyCode::ArrowRight),
-                (PlayerAction::Up, KeyCode::KeyW),
-                (PlayerAction::Up, KeyCode::ArrowUp),
-                (PlayerAction::Down, KeyCode::KeyS),
-                (PlayerAction::Down, KeyCode::ArrowDown),
+                (PlayerAction::Move, VirtualDPad::wasd()),
+                (PlayerAction::Move, VirtualDPad::arrow_keys()),
             ]),
         },
     ));
@@ -148,22 +139,24 @@ fn player_movement(
         }
     };
 
-    // Check X inputs
-    if action_state.pressed(&PlayerAction::Left) {
-        direction.x -= 1.0;
-        new_state = PlayerAnimationState::WalkLeft;
-    } else if action_state.pressed(&PlayerAction::Right) {
-        direction.x += 1.0;
-        new_state = PlayerAnimationState::WalkRight;
+    if let Some(axis) = action_state.clamped_axis_pair(&PlayerAction::Move) {
+        direction = axis.xy().extend(0.0);
     }
 
-    // Check Y inputs
-    if action_state.pressed(&PlayerAction::Up) {
-        direction.y += 1.0;
-        new_state = PlayerAnimationState::WalkUp;
-    } else if action_state.pressed(&PlayerAction::Down) {
-        direction.y -= 1.0;
-        new_state = PlayerAnimationState::WalkDown;
+    if direction != Vec3::ZERO {
+        if direction.x.abs() > direction.y.abs() {
+            if direction.x > 0.0 {
+                new_state = PlayerAnimationState::WalkRight;
+            } else {
+                new_state = PlayerAnimationState::WalkLeft;
+            }
+        } else {
+            if direction.y > 0.0 {
+                new_state = PlayerAnimationState::WalkUp;
+            } else {
+                new_state = PlayerAnimationState::WalkDown;
+            }
+        }
     }
 
     // Mutate the state only if it actually changed to prevent triggering Change Detection every frame
