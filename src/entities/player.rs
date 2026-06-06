@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use crate::core::state::{GameState, PauseState};
+use crate::core::state::{GameState, GameplaySet, PauseState};
 use crate::ui::loading::GameAssets;
 use crate::core::utils::despawn_screen;
 use crate::render::z_layers;
@@ -37,6 +37,12 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>()
             .add_plugins(InputManagerPlugin::<PlayerAction>::default())
+            .configure_sets(
+                Update,
+                GameplaySet
+                    .run_if(in_state(GameState::Playing))
+                    .run_if(in_state(PauseState::Running)),
+            )
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
@@ -46,8 +52,7 @@ impl Plugin for PlayerPlugin {
                     player_animation_controller,
                     animate_sprite,
                 )
-                    .run_if(in_state(GameState::Playing))
-                    .run_if(in_state(PauseState::Running)),
+                    .in_set(GameplaySet),
             );
     }
 }
