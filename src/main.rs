@@ -4,6 +4,8 @@ mod pause_menu;
 mod player;
 mod state;
 mod utils;
+mod y_sort;
+mod z_layers;
 
 use bevy::prelude::*;
 use loading::LoadingPlugin;
@@ -11,6 +13,7 @@ use menu::MenuPlugin;
 use pause_menu::PauseMenuPlugin;
 use player::PlayerPlugin;
 use state::{GameState, PauseState};
+use y_sort::YSortPlugin;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -36,6 +39,12 @@ fn main() {
         }))
         .init_state::<GameState>()
         .init_state::<PauseState>()
-        .add_plugins((LoadingPlugin, MenuPlugin, PauseMenuPlugin, PlayerPlugin))
+        .add_plugins((
+            LoadingPlugin,
+            MenuPlugin,
+            PauseMenuPlugin,
+            PlayerPlugin,
+            YSortPlugin,
+        ))
         .run();
 }

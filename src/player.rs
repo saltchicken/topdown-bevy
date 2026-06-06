@@ -3,6 +3,8 @@ use leafwing_input_manager::prelude::*;
 use crate::state::{GameState, PauseState};
 use crate::loading::GameAssets;
 use crate::utils::despawn_screen;
+use crate::z_layers;
+use crate::y_sort::YSort;
 
 const PLAYER_SPEED: f32 = 300.0;
 const PLAYER_SCALE: f32 = 2.0;
@@ -89,7 +91,7 @@ fn setup_game(
     commands.spawn((
         SpriteBundle {
             texture: game_assets.player_idle.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(PLAYER_SCALE)),
+            transform: Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(PLAYER_SCALE)),
             ..default()
         },
         TextureAtlas {
@@ -97,6 +99,7 @@ fn setup_game(
             index: 0,
         },
         Player { speed: PLAYER_SPEED }, // Initialize player speed here
+        YSort(z_layers::ENTITIES),
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(IDLE_FRAME_DURATION, TimerMode::Repeating)),
         InputManagerBundle::<PlayerAction> {
