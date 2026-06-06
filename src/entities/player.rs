@@ -3,7 +3,7 @@ use crate::core::input::GameAction;
 use crate::core::state::{GameState, GameplaySet};
 use crate::core::utils::despawn_screen;
 use crate::render::y_sort::YSort;
-use crate::render::z_layers;
+use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -111,9 +111,9 @@ fn setup_game(
             }),
             ..default()
         },
-        Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(config.scale)),
+        Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32()).with_scale(Vec3::splat(config.scale)),
         Player,
-        YSort(z_layers::ENTITIES),
+        YSort(ZLayer::Entities),
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(
             config.idle_frame_duration,

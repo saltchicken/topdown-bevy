@@ -1,6 +1,6 @@
 use crate::core::state::GameState;
 use crate::core::utils::despawn_screen;
-use crate::render::z_layers;
+use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -53,7 +53,7 @@ fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
         transform: Transform::from_xyz(
             -(tilemap_size.x as f32 * tile_size.x) / 2.0,
             -(tilemap_size.y as f32 * tile_size.y) / 2.0,
-            z_layers::BACKGROUND,
+            ZLayer::Background.to_f32(),
         ),
         ..Default::default()
     });
