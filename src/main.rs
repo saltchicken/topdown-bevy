@@ -10,6 +10,10 @@ use menu::MenuPlugin;
 use player::PlayerPlugin;
 use state::GameState;
 
+const WINDOW_WIDTH: f32 = 1280.0;
+const WINDOW_HEIGHT: f32 = 720.0;
+const WINDOW_TITLE: &str = "topdown";
+
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
@@ -19,8 +23,8 @@ fn main() {
         .add_systems(Startup, setup_camera)
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                resolution: (1280.0, 720.0).into(),
-                title: "topdown".into(),
+                resolution: (WINDOW_WIDTH, WINDOW_HEIGHT).into(),
+                title: WINDOW_TITLE.into(),
                 ..default()
             }),
             ..default()

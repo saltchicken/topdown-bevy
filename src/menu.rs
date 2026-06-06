@@ -15,6 +15,9 @@ impl Plugin for MenuPlugin {
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+const BUTTON_WIDTH: f32 = 200.0;
+const BUTTON_HEIGHT: f32 = 65.0;
+const FONT_SIZE: f32 = 40.0;
 
 #[derive(Component)]
 struct MenuEntity;
@@ -39,8 +42,8 @@ fn setup_menu(mut commands: Commands) {
             parent
                 .spawn(ButtonBundle {
                     style: Style {
-                        width: Val::Px(200.0),
-                        height: Val::Px(65.0),
+                        width: Val::Px(BUTTON_WIDTH),
+                        height: Val::Px(BUTTON_HEIGHT),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
@@ -52,7 +55,7 @@ fn setup_menu(mut commands: Commands) {
                     parent.spawn(TextBundle::from_section(
                         "Play Game",
                         TextStyle {
-                            font_size: 40.0,
+                            font_size: FONT_SIZE,
                             color: Color::WHITE,
                             ..default()
                         },

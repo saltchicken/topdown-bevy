@@ -18,6 +18,9 @@ impl Plugin for LoadingPlugin {
     }
 }
 
+const BG_COLOR: Color = Color::srgb(0.05, 0.05, 0.05);
+const FONT_SIZE: f32 = 60.0;
+
 // Marker component so we can find and despawn the loading screen later
 #[derive(Component)]
 struct LoadingUI;
@@ -42,7 +45,7 @@ fn setup_loading_screen(mut commands: Commands) {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                background_color: Color::srgb(0.05, 0.05, 0.05).into(), // Dark background
+                background_color: BG_COLOR.into(), // Dark background
                 ..default()
             },
             LoadingUI, // Tag it for cleanup
@@ -51,7 +54,7 @@ fn setup_loading_screen(mut commands: Commands) {
             parent.spawn(TextBundle::from_section(
                 "Loading...",
                 TextStyle {
-                    font_size: 60.0,
+                    font_size: FONT_SIZE,
                     color: Color::WHITE,
                     ..default()
                 },

@@ -3,6 +3,14 @@ use leafwing_input_manager::prelude::*;
 use crate::state::GameState;
 use crate::loading::GameAssets;
 
+const PLAYER_SPEED: f32 = 300.0;
+const PLAYER_SCALE: f32 = 2.0;
+const SPRITE_SIZE: u32 = 32;
+const SPRITE_COLS: u32 = 4;
+const SPRITE_ROWS: u32 = 4;
+const IDLE_FRAME_DURATION: f32 = 0.4;
+const WALK_FRAME_DURATION: f32 = 0.15;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -74,23 +82,23 @@ fn setup_game(
     game_assets: Res<GameAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(SPRITE_SIZE, SPRITE_SIZE), SPRITE_COLS, SPRITE_ROWS, None, None);
     let player_layout = texture_atlas_layouts.add(layout);
 
     // Spawn the player with the idle texture by default
     commands.spawn((
         SpriteBundle {
             texture: game_assets.player_idle.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(PLAYER_SCALE)),
             ..default()
         },
         TextureAtlas {
             layout: player_layout,
             index: 0,
         },
-        Player { speed: 300.0 }, // Initialize player speed here
+        Player { speed: PLAYER_SPEED }, // Initialize player speed here
         PlayerAnimationState::IdleDown,
-        AnimationTimer(Timer::from_seconds(0.4, TimerMode::Repeating)),
+        AnimationTimer(Timer::from_seconds(IDLE_FRAME_DURATION, TimerMode::Repeating)),
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map: InputMap::new([
@@ -161,9 +169,7 @@ fn player_movement(
     }
 
     // Apply movement
-    if direction.length() > 0.0 {
-        direction = direction.normalize();
-    }
+    direction = direction.normalize_or_zero();
 
     player_transform.translation += direction * player.speed * time.delta_seconds();
 }
@@ -197,8 +203,8 @@ fn player_animation_controller(
             PlayerAnimationState::IdleDown
             | PlayerAnimationState::IdleLeft
             | PlayerAnimationState::IdleUp
-            | PlayerAnimationState::IdleRight => 0.4,
-            _ => 0.15,
+            | PlayerAnimationState::IdleRight => IDLE_FRAME_DURATION,
+            _ => WALK_FRAME_DURATION,
         };
         timer.set_duration(std::time::Duration::from_secs_f32(duration));
     }
