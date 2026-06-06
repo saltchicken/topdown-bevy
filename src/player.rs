@@ -62,7 +62,11 @@ impl PlayerAnimationState {
 fn setup_game(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(32, 32), 4, 4, None, None);
+    let player_layout = texture_atlas_layouts.add(layout);
+
     // Spawn the player with the idle texture by default
     commands.spawn((
         SpriteBundle {
@@ -71,7 +75,7 @@ fn setup_game(
             ..default()
         },
         TextureAtlas {
-            layout: game_assets.player_layout.clone(),
+            layout: player_layout,
             index: 0,
         },
         Player { speed: 300.0 }, // Initialize player speed here
