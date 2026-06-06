@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::*;
 use crate::state::GameState;
 use crate::loading::GameAssets;
 
@@ -6,7 +7,8 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), setup_game)
+        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
+            .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(
                 Update,
                 (
@@ -22,6 +24,14 @@ impl Plugin for PlayerPlugin {
 #[derive(Component)]
 struct Player {
     pub speed: f32,
+}
+
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+pub enum PlayerAction {
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 #[derive(Component, Deref, DerefMut)]
@@ -81,16 +91,33 @@ fn setup_game(
         Player { speed: 300.0 }, // Initialize player speed here
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(0.4, TimerMode::Repeating)),
+        InputManagerBundle::<PlayerAction> {
+            action_state: ActionState::default(),
+            input_map: InputMap::new([
+                (PlayerAction::Left, KeyCode::KeyA),
+                (PlayerAction::Left, KeyCode::ArrowLeft),
+                (PlayerAction::Right, KeyCode::KeyD),
+                (PlayerAction::Right, KeyCode::ArrowRight),
+                (PlayerAction::Up, KeyCode::KeyW),
+                (PlayerAction::Up, KeyCode::ArrowUp),
+                (PlayerAction::Down, KeyCode::KeyS),
+                (PlayerAction::Down, KeyCode::ArrowDown),
+            ]),
+        },
     ));
 }
 
 // Logic Only: Reads inputs, updates Transform, and sets the intended PlayerAnimationState
 fn player_movement(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&Player, &mut Transform, &mut PlayerAnimationState)>,
+    mut query: Query<(
+        &Player,
+        &mut Transform,
+        &mut PlayerAnimationState,
+        &ActionState<PlayerAction>,
+    )>,
     time: Res<Time>,
 ) {
-    let Ok((player, mut player_transform, mut animation_state)) = query.get_single_mut() else {
+    let Ok((player, mut player_transform, mut animation_state, action_state)) = query.get_single_mut() else {
         return;
     };
 
@@ -111,19 +138,19 @@ fn player_movement(
     };
 
     // Check X inputs
-    if keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft) {
+    if action_state.pressed(&PlayerAction::Left) {
         direction.x -= 1.0;
         new_state = PlayerAnimationState::WalkLeft;
-    } else if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
+    } else if action_state.pressed(&PlayerAction::Right) {
         direction.x += 1.0;
         new_state = PlayerAnimationState::WalkRight;
     }
 
     // Check Y inputs
-    if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
+    if action_state.pressed(&PlayerAction::Up) {
         direction.y += 1.0;
         new_state = PlayerAnimationState::WalkUp;
-    } else if keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown) {
+    } else if action_state.pressed(&PlayerAction::Down) {
         direction.y -= 1.0;
         new_state = PlayerAnimationState::WalkDown;
     }

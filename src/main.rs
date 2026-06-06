@@ -2,6 +2,7 @@ mod loading;
 mod menu;
 mod player;
 mod state;
+mod utils;
 
 use bevy::prelude::*;
 use loading::LoadingPlugin;

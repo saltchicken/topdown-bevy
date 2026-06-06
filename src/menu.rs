@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::state::GameState;
+use crate::utils::despawn_screen;
 
 pub struct MenuPlugin;
 
@@ -7,7 +8,7 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::MainMenu), setup_menu)
             .add_systems(Update, button_system.run_if(in_state(GameState::MainMenu)))
-            .add_systems(OnExit(GameState::MainMenu), cleanup_menu);
+            .add_systems(OnExit(GameState::MainMenu), despawn_screen::<MenuEntity>);
     }
 }
 
@@ -84,9 +85,3 @@ fn button_system(
     }
 }
 
-// Despawns the menu layout and menu camera when the state changes
-fn cleanup_menu(mut commands: Commands, query: Query<Entity, With<MenuEntity>>) {
-    for entity in &query {
-        commands.entity(entity).despawn_recursive();
-    }
-}

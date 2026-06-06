@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use crate::state::GameState;
+use crate::utils::despawn_screen;
 
 pub struct LoadingPlugin;
 
@@ -13,7 +14,7 @@ impl Plugin for LoadingPlugin {
         )
         .add_systems(OnEnter(GameState::Loading), setup_loading_screen)
         // Add cleanup system to remove the UI when loading finishes
-        .add_systems(OnExit(GameState::Loading), cleanup_loading);
+        .add_systems(OnExit(GameState::Loading), despawn_screen::<LoadingUI>);
     }
 }
 
@@ -58,9 +59,3 @@ fn setup_loading_screen(mut commands: Commands) {
         });
 }
 
-// Despawns the loading screen layout when the state changes
-fn cleanup_loading(mut commands: Commands, query: Query<Entity, With<LoadingUI>>) {
-    for entity in &query {
-        commands.entity(entity).despawn_recursive();
-    }
-}
