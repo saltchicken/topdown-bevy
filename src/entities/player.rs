@@ -1,3 +1,4 @@
+use crate::core::camera::{CameraFollow, MainCamera};
 use crate::core::input::GameAction;
 use crate::core::state::{GameState, GameplaySet};
 use crate::core::utils::despawn_screen;
@@ -89,6 +90,7 @@ fn setup_game(
     game_assets: Res<GameAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     config: Res<PlayerConfig>,
+    camera_query: Query<Entity, With<MainCamera>>,
 ) {
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(config.sprite_size, config.sprite_size),
@@ -100,7 +102,7 @@ fn setup_game(
     let player_layout = texture_atlas_layouts.add(layout);
 
     // Spawn the player with the idle texture by default
-    commands.spawn((
+    let player_entity = commands.spawn((
         Sprite {
             image: game_assets.player_idle.clone(),
             texture_atlas: Some(TextureAtlas {
@@ -117,7 +119,14 @@ fn setup_game(
             config.idle_frame_duration,
             TimerMode::Repeating,
         )),
-    ));
+    )).id();
+
+    if let Ok(camera_entity) = camera_query.single() {
+        commands.entity(camera_entity).insert(CameraFollow {
+            target: player_entity,
+            decay_rate: 2.0,
+        });
+    }
 }
 
 // Logic Only: Reads inputs, updates Transform, and sets the intended PlayerAnimationState

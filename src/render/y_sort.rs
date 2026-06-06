@@ -1,3 +1,4 @@
+use crate::render::z_layers::Y_SORT_MULTIPLIER;
 use bevy::prelude::*;
 
 pub struct YSortPlugin;
@@ -13,7 +14,7 @@ pub struct YSort(pub f32);
 
 fn y_sort_system(mut query: Query<(&YSort, &mut Transform)>) {
     for (y_sort_base, mut transform) in &mut query {
-        let new_z = y_sort_base.0 - transform.translation.y * 0.0001;
+        let new_z = y_sort_base.0 - transform.translation.y * Y_SORT_MULTIPLIER;
 
         // Only mutate the transform if the Z value actually changed.
         // We use an epsilon check for floating-point safety.
