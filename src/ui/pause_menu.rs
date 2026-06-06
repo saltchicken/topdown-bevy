@@ -40,56 +40,51 @@ fn toggle_pause(
 fn setup_pause_menu(mut commands: Commands) {
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
-                background_color: MENU_BG_COLOR.into(),
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
+            BackgroundColor(MENU_BG_COLOR),
             PauseMenuEntity,
         ))
         .with_children(|parent| {
-            parent.spawn(
-                TextBundle::from_section(
-                    "PAUSED",
-                    TextStyle {
-                        font_size: FONT_SIZE * 2.0,
-                        color: Color::WHITE,
-                        ..default()
-                    },
-                )
-                .with_style(Style {
+            parent.spawn((
+                Text::new("PAUSED"),
+                TextFont {
+                    font_size: FONT_SIZE * 2.0,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+                Node {
                     margin: UiRect::bottom(Val::Px(30.0)),
                     ..default()
-                }),
-            );
+                },
+            ));
 
             parent
-                .spawn(ButtonBundle {
-                    style: Style {
+                .spawn((
+                    Button,
+                    Node {
                         width: Val::Px(BUTTON_WIDTH),
                         height: Val::Px(BUTTON_HEIGHT),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                })
+                    BackgroundColor(NORMAL_BUTTON),
+                ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Resume",
-                        TextStyle {
+                    parent.spawn((
+                        Text::new("Resume"),
+                        TextFont {
                             font_size: FONT_SIZE,
-                            color: Color::WHITE,
                             ..default()
                         },
+                        TextColor(Color::WHITE),
                     ));
                 });
         });

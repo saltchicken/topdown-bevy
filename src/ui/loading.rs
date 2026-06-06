@@ -37,27 +37,24 @@ fn setup_loading_screen(mut commands: Commands) {
     // 1. Spawn Loading Screen UI
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: BG_COLOR.into(), // Dark background
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             },
+            BackgroundColor(BG_COLOR), // Dark background
             LoadingUI, // Tag it for cleanup
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Loading...",
-                TextStyle {
+            parent.spawn((
+                Text::new("Loading..."),
+                TextFont {
                     font_size: FONT_SIZE,
-                    color: Color::WHITE,
                     ..default()
                 },
+                TextColor(Color::WHITE),
             ));
         });
 }

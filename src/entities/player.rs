@@ -62,6 +62,7 @@ pub struct Player;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
+    #[actionlike(DualAxis)]
     Move,
 }
 
@@ -111,26 +112,23 @@ fn setup_game(
 
     // Spawn the player with the idle texture by default
     commands.spawn((
-        SpriteBundle {
-            texture: game_assets.player_idle.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(config.scale)),
+        Sprite {
+            image: game_assets.player_idle.clone(),
+            texture_atlas: Some(TextureAtlas {
+                layout: player_layout,
+                index: 0,
+            }),
             ..default()
         },
-        TextureAtlas {
-            layout: player_layout,
-            index: 0,
-        },
+        Transform::from_xyz(0.0, 0.0, z_layers::ENTITIES).with_scale(Vec3::splat(config.scale)),
         Player,
         YSort(z_layers::ENTITIES),
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(config.idle_frame_duration, TimerMode::Repeating)),
-        InputManagerBundle::<PlayerAction> {
-            action_state: ActionState::default(),
-            input_map: InputMap::new([
-                (PlayerAction::Move, VirtualDPad::wasd()),
-                (PlayerAction::Move, VirtualDPad::arrow_keys()),
-            ]),
-        },
+        ActionState::<PlayerAction>::default(),
+        InputMap::default()
+            .with_dual_axis(PlayerAction::Move, VirtualDPad::wasd())
+            .with_dual_axis(PlayerAction::Move, VirtualDPad::arrow_keys()),
     ));
 }
 
@@ -145,7 +143,7 @@ fn player_movement(
     time: Res<Time>,
     config: Res<PlayerConfig>,
 ) {
-    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.get_single_mut() else {
+    let Ok((_player, mut player_transform, mut animation_state, action_state)) = query.single_mut() else {
         return;
     };
 
@@ -165,9 +163,8 @@ fn player_movement(
         }
     };
 
-    if let Some(axis) = action_state.clamped_axis_pair(&PlayerAction::Move) {
-        direction = axis.xy().extend(0.0);
-    }
+    let axis = action_state.clamped_axis_pair(&PlayerAction::Move);
+    direction = axis.extend(0.0);
 
     if direction != Vec3::ZERO {
         if direction.x.abs() > direction.y.abs() {
@@ -193,7 +190,7 @@ fn player_movement(
     // Apply movement
     direction = direction.normalize_or_zero();
 
-    player_transform.translation += direction * config.speed * time.delta_seconds();
+    player_transform.translation += direction * config.speed * time.delta_secs();
 }
 
 // Visuals Only: Listens for changes to the animation state and updates visual components
@@ -201,25 +198,26 @@ fn player_animation_controller(
     mut query: Query<
         (
             &PlayerAnimationState,
-            &mut TextureAtlas,
+            &mut Sprite,
             &mut AnimationTimer,
-            &mut Handle<Image>,
         ),
         (With<Player>, Changed<PlayerAnimationState>),
     >,
     animations: Res<GameAssets>,
     config: Res<PlayerConfig>,
 ) {
-    for (state, mut atlas, mut timer, mut texture) in &mut query {
+    for (state, mut sprite, mut timer) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
         if state.is_walk() {
-            *texture = animations.player_walk.clone();
+            sprite.image = animations.player_walk.clone();
         } else {
-            *texture = animations.player_idle.clone();
+            sprite.image = animations.player_idle.clone();
         }
 
         // Snap to the correct starting frame for the new state
-        atlas.index = state.indices().0;
+        if let Some(atlas) = sprite.texture_atlas.as_mut() {
+            atlas.index = state.indices().0;
+        }
 
         // Adjust animation speed based on the action
         let duration = match state {
@@ -236,18 +234,20 @@ fn player_animation_controller(
 // Progresses the frames for whatever animation is currently playing
 fn animate_sprite(
     time: Res<Time>,
-    mut query: Query<(&PlayerAnimationState, &mut AnimationTimer, &mut TextureAtlas)>,
+    mut query: Query<(&PlayerAnimationState, &mut AnimationTimer, &mut Sprite)>,
 ) {
-    for (state, mut timer, mut atlas) in &mut query {
+    for (state, mut timer, mut sprite) in &mut query {
         timer.tick(time.delta());
 
         if timer.just_finished() {
-            let (start, end) = state.indices();
+            if let Some(atlas) = sprite.texture_atlas.as_mut() {
+                let (start, end) = state.indices();
 
-            if atlas.index < start || atlas.index >= end {
-                atlas.index = start;
-            } else {
-                atlas.index += 1;
+                if atlas.index < start || atlas.index >= end {
+                    atlas.index = start;
+                } else {
+                    atlas.index += 1;
+                }
             }
         }
     }

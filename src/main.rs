@@ -20,7 +20,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                resolution: (WINDOW_WIDTH, WINDOW_HEIGHT).into(),
+                resolution: (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32).into(),
                 title: WINDOW_TITLE.into(),
                 ..default()
             }),
