@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use crate::state::{GameState, PauseState};
-use crate::loading::GameAssets;
-use crate::utils::despawn_screen;
-use crate::z_layers;
-use crate::y_sort::YSort;
+use crate::core::state::{GameState, PauseState};
+use crate::ui::loading::GameAssets;
+use crate::core::utils::despawn_screen;
+use crate::render::z_layers;
+use crate::render::y_sort::YSort;
 
 const PLAYER_SPEED: f32 = 300.0;
 const PLAYER_SCALE: f32 = 2.0;

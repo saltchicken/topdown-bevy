@@ -1,19 +1,15 @@
-mod loading;
-mod menu;
-mod pause_menu;
-mod player;
-mod state;
-mod utils;
-mod y_sort;
-mod z_layers;
+mod core;
+mod entities;
+mod render;
+mod ui;
 
 use bevy::prelude::*;
-use loading::LoadingPlugin;
-use menu::MenuPlugin;
-use pause_menu::PauseMenuPlugin;
-use player::PlayerPlugin;
-use state::{GameState, PauseState};
-use y_sort::YSortPlugin;
+use core::state::{GameState, PauseState};
+use entities::player::PlayerPlugin;
+use render::y_sort::YSortPlugin;
+use ui::loading::LoadingPlugin;
+use ui::menu::MenuPlugin;
+use ui::pause_menu::PauseMenuPlugin;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;

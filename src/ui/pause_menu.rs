@@ -1,14 +1,15 @@
 use bevy::prelude::*;
-use crate::state::GameState;
-use crate::utils::despawn_screen;
+use crate::core::state::{GameState, PauseState};
+use crate::core::utils::despawn_screen;
 
-pub struct MenuPlugin;
+pub struct PauseMenuPlugin;
 
-impl Plugin for MenuPlugin {
+impl Plugin for PauseMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::MainMenu), setup_menu)
-            .add_systems(Update, button_system.run_if(in_state(GameState::MainMenu)))
-            .add_systems(OnExit(GameState::MainMenu), despawn_screen::<MenuEntity>);
+        app.add_systems(Update, toggle_pause.run_if(in_state(GameState::Playing)))
+            .add_systems(OnEnter(PauseState::Paused), setup_pause_menu)
+            .add_systems(Update, resume_button_system.run_if(in_state(PauseState::Paused)))
+            .add_systems(OnExit(PauseState::Paused), despawn_screen::<PauseMenuEntity>);
     }
 }
 
@@ -18,12 +19,25 @@ const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 const BUTTON_WIDTH: f32 = 200.0;
 const BUTTON_HEIGHT: f32 = 65.0;
 const FONT_SIZE: f32 = 40.0;
+const MENU_BG_COLOR: Color = Color::srgba(0.0, 0.0, 0.0, 0.8);
 
 #[derive(Component)]
-struct MenuEntity;
+struct PauseMenuEntity;
 
-fn setup_menu(mut commands: Commands) {
-    // Spawn the UI Layout
+fn toggle_pause(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    state: Res<State<PauseState>>,
+    mut next_state: ResMut<NextState<PauseState>>,
+) {
+    if keyboard.just_pressed(KeyCode::Escape) {
+        match state.get() {
+            PauseState::Running => next_state.set(PauseState::Paused),
+            PauseState::Paused => next_state.set(PauseState::Running),
+        }
+    }
+}
+
+fn setup_pause_menu(mut commands: Commands) {
     commands
         .spawn((
             NodeBundle {
@@ -32,13 +46,30 @@ fn setup_menu(mut commands: Commands) {
                     height: Val::Percent(100.0),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
+                    flex_direction: FlexDirection::Column,
                     ..default()
                 },
+                background_color: MENU_BG_COLOR.into(),
                 ..default()
             },
-            MenuEntity, // Tag the root node so we can clean it up later
+            PauseMenuEntity,
         ))
         .with_children(|parent| {
+            parent.spawn(
+                TextBundle::from_section(
+                    "PAUSED",
+                    TextStyle {
+                        font_size: FONT_SIZE * 2.0,
+                        color: Color::WHITE,
+                        ..default()
+                    },
+                )
+                .with_style(Style {
+                    margin: UiRect::bottom(Val::Px(30.0)),
+                    ..default()
+                }),
+            );
+
             parent
                 .spawn(ButtonBundle {
                     style: Style {
@@ -53,7 +84,7 @@ fn setup_menu(mut commands: Commands) {
                 })
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
-                        "Play Game",
+                        "Resume",
                         TextStyle {
                             font_size: FONT_SIZE,
                             color: Color::WHITE,
@@ -64,19 +95,18 @@ fn setup_menu(mut commands: Commands) {
         });
 }
 
-fn button_system(
+fn resume_button_system(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_state: ResMut<NextState<PauseState>>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 *color = PRESSED_BUTTON.into();
-                // Trigger the transition to the Playing state
-                next_state.set(GameState::Playing);
+                next_state.set(PauseState::Running);
             }
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();
@@ -87,4 +117,3 @@ fn button_system(
         }
     }
 }
-

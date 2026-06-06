@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
-use crate::state::GameState;
-use crate::utils::despawn_screen;
+use crate::core::state::GameState;
+use crate::core::utils::despawn_screen;
 
 pub struct LoadingPlugin;
 
