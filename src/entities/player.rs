@@ -163,11 +163,34 @@ fn player_movement(
             } else {
                 new_state = PlayerAnimationState::WalkLeft;
             }
-        } else {
+        } else if direction.y.abs() > direction.x.abs() {
             if direction.y > 0.0 {
                 new_state = PlayerAnimationState::WalkUp;
             } else {
                 new_state = PlayerAnimationState::WalkDown;
+            }
+        } else {
+            // Diagonal movement: gracefully maintain current axis preference
+            match *animation_state {
+                PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight if direction.x > 0.0 => {
+                    new_state = PlayerAnimationState::WalkRight;
+                }
+                PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft if direction.x < 0.0 => {
+                    new_state = PlayerAnimationState::WalkLeft;
+                }
+                PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp if direction.y > 0.0 => {
+                    new_state = PlayerAnimationState::WalkUp;
+                }
+                PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown if direction.y < 0.0 => {
+                    new_state = PlayerAnimationState::WalkDown;
+                }
+                _ => {
+                    if direction.x > 0.0 {
+                        new_state = PlayerAnimationState::WalkRight;
+                    } else {
+                        new_state = PlayerAnimationState::WalkLeft;
+                    }
+                }
             }
         }
     }
