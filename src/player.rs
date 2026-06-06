@@ -8,7 +8,12 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(
                 Update,
-                (player_movement, animate_sprite).run_if(in_state(GameState::Playing)),
+                (
+                    player_movement,
+                    player_animation_controller,
+                    animate_sprite,
+                )
+                    .run_if(in_state(GameState::Playing)),
             );
     }
 }
@@ -21,7 +26,9 @@ struct PlayerAnimations {
 }
 
 #[derive(Component)]
-struct Player;
+struct Player {
+    pub speed: f32,
+}
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
@@ -39,7 +46,7 @@ enum PlayerAnimationState {
 }
 
 impl PlayerAnimationState {
-    // Both 4x4 sprite sheets follow the exact same layout mappings now
+    // Both 4x4 sprite sheets follow the exact same layout mappings
     fn indices(&self) -> (usize, usize) {
         match self {
             Self::IdleDown | Self::WalkDown => (0, 3),    // Row 0
@@ -63,6 +70,8 @@ fn setup_game(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
+    // Note: It is recommended to move camera setup to a main Startup system 
+    // to prevent spawning multiple cameras if you re-enter this state.
     commands.spawn(Camera2dBundle::default());
 
     // Load both sheets
@@ -90,36 +99,36 @@ fn setup_game(
             layout: layout_handle,
             index: 0,
         },
-        Player,
+        Player { speed: 300.0 }, // Initialize player speed here
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(0.4, TimerMode::Repeating)),
     ));
 }
 
+// Logic Only: Reads inputs, updates Transform, and sets the intended PlayerAnimationState
 fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(
-        &mut Transform,
-        &mut PlayerAnimationState,
-        &mut TextureAtlas,
-        &mut AnimationTimer,
-        &mut Handle<Image>, // Grab the image handle directly off the entity so we can mutate it
-    ), With<Player>>,
-    animations: Res<PlayerAnimations>,
+    mut query: Query<(&Player, &mut Transform, &mut PlayerAnimationState)>,
     time: Res<Time>,
 ) {
-    let Ok((mut player_transform, mut animation_state, mut atlas, mut timer, mut texture)) = query.get_single_mut() else {
+    let Ok((player, mut player_transform, mut animation_state)) = query.get_single_mut() else {
         return;
     };
 
-    let speed = 300.0;
     let mut direction = Vec3::ZERO;
-    
+
+    // Default to idle based on current facing direction
     let mut new_state = match *animation_state {
-        PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown => PlayerAnimationState::IdleDown,
+        PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown => {
+            PlayerAnimationState::IdleDown
+        }
         PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp => PlayerAnimationState::IdleUp,
-        PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft => PlayerAnimationState::IdleLeft,
-        PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight => PlayerAnimationState::IdleRight,
+        PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft => {
+            PlayerAnimationState::IdleLeft
+        }
+        PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight => {
+            PlayerAnimationState::IdleRight
+        }
     };
 
     // Check X inputs
@@ -140,20 +149,45 @@ fn player_movement(
         new_state = PlayerAnimationState::WalkDown;
     }
 
+    // Mutate the state only if it actually changed to prevent triggering Change Detection every frame
     if *animation_state != new_state {
+        *animation_state = new_state;
+    }
+
+    // Apply movement
+    if direction.length() > 0.0 {
+        direction = direction.normalize();
+    }
+
+    player_transform.translation += direction * player.speed * time.delta_seconds();
+}
+
+// Visuals Only: Listens for changes to the animation state and updates visual components
+fn player_animation_controller(
+    mut query: Query<
+        (
+            &PlayerAnimationState,
+            &mut TextureAtlas,
+            &mut AnimationTimer,
+            &mut Handle<Image>,
+        ),
+        (With<Player>, Changed<PlayerAnimationState>),
+    >,
+    animations: Res<PlayerAnimations>,
+) {
+    for (state, mut atlas, mut timer, mut texture) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
-        if animation_state.is_walk() != new_state.is_walk() {
-            if new_state.is_walk() {
-                *texture = animations.walk.clone();
-            } else {
-                *texture = animations.idle.clone();
-            }
+        if state.is_walk() {
+            *texture = animations.walk.clone();
+        } else {
+            *texture = animations.idle.clone();
         }
 
-        *animation_state = new_state;
-        atlas.index = new_state.indices().0;
+        // Snap to the correct starting frame for the new state
+        atlas.index = state.indices().0;
 
-        let duration = match new_state {
+        // Adjust animation speed based on the action
+        let duration = match state {
             PlayerAnimationState::IdleDown
             | PlayerAnimationState::IdleLeft
             | PlayerAnimationState::IdleUp
@@ -162,24 +196,19 @@ fn player_movement(
         };
         timer.set_duration(std::time::Duration::from_secs_f32(duration));
     }
-
-    if direction.length() > 0.0 {
-        direction = direction.normalize();
-    }
-
-    player_transform.translation += direction * speed * time.delta_seconds();
 }
 
+// Progresses the frames for whatever animation is currently playing
 fn animate_sprite(
     time: Res<Time>,
     mut query: Query<(&PlayerAnimationState, &mut AnimationTimer, &mut TextureAtlas)>,
 ) {
     for (state, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
-        
+
         if timer.just_finished() {
             let (start, end) = state.indices();
-            
+
             if atlas.index < start || atlas.index >= end {
                 atlas.index = start;
             } else {
