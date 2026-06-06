@@ -31,6 +31,10 @@ pub struct GameAssets {
     pub player_idle: Handle<Image>,
     #[asset(path = "player_walk.png")]
     pub player_walk: Handle<Image>,
+    #[asset(path = "enemy_idle.png")]
+    pub enemy_idle: Handle<Image>,
+    #[asset(path = "enemy_walk.png")]
+    pub enemy_walk: Handle<Image>,
     #[asset(path = "tiles.png")]
     pub tiles: Handle<Image>,
 }

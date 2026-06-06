@@ -10,6 +10,7 @@ use core::state::StatePlugin;
 use bevy_ecs_tilemap::TilemapPlugin;
 use entities::map::MapPlugin;
 use entities::player::PlayerPlugin;
+use entities::enemy::EnemyPlugin;
 use render::y_sort::YSortPlugin;
 use ui::loading::LoadingPlugin;
 use ui::menu::MenuPlugin;
@@ -39,6 +40,7 @@ fn main() {
             TilemapPlugin,
             MapPlugin,
             PlayerPlugin,
+            EnemyPlugin,
             YSortPlugin,
         ))
         .run();
