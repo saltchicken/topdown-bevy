@@ -31,6 +31,8 @@ pub struct GameAssets {
     pub player_idle: Handle<Image>,
     #[asset(path = "player_walk.png")]
     pub player_walk: Handle<Image>,
+    #[asset(path = "tiles.png")]
+    pub tiles: Handle<Image>,
 }
 
 fn setup_loading_screen(mut commands: Commands) {

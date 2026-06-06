@@ -7,6 +7,8 @@ use bevy::prelude::*;
 use core::camera::CameraPlugin;
 use core::input::InputPlugin;
 use core::state::StatePlugin;
+use bevy_ecs_tilemap::TilemapPlugin;
+use entities::map::MapPlugin;
 use entities::player::PlayerPlugin;
 use render::y_sort::YSortPlugin;
 use ui::loading::LoadingPlugin;
@@ -34,6 +36,8 @@ fn main() {
             LoadingPlugin,
             MenuPlugin,
             PauseMenuPlugin,
+            TilemapPlugin,
+            MapPlugin,
             PlayerPlugin,
             YSortPlugin,
         ))

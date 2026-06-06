@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 bevy = { version = "0.18", features = ["wayland"] }
 bevy_asset_loader = { version = "0.25", features = ["2d"] }
+bevy_ecs_tilemap = "0.18.1"
 leafwing-input-manager = "0.20"
