@@ -2,6 +2,7 @@ use crate::core::camera::{CameraFollow, MainCamera};
 use crate::core::input::GameAction;
 use crate::core::state::{GameState, GameplaySet};
 use crate::core::utils::despawn_screen;
+use crate::entities::enemy::Enemy;
 use crate::render::y_sort::YSort;
 use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
@@ -23,16 +24,20 @@ pub struct PlayerConfig {
     pub walk_frame_duration: f32,
 }
 
+#[derive(Message)]
+pub struct PlayerTouchedEnemyEvent;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<PlayerConfig>::new(&["player.ron"]))
+            app.add_message::<PlayerTouchedEnemyEvent>()
+            .add_plugins(bevy_common_assets::ron::RonAssetPlugin::<PlayerConfig>::new(&["player.ron"]))
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (read_player_input, update_player_state, player_animation_controller, animate_sprite).in_set(GameplaySet),
+                (read_player_input, update_player_state, player_animation_controller, animate_sprite, handle_player_enemy_collisions).in_set(GameplaySet),
             )
             .add_systems(
                 FixedUpdate,
@@ -250,6 +255,27 @@ fn animate_sprite(
                     atlas.index += 1;
                 }
             }
+        }
+    }
+}
+
+fn handle_player_enemy_collisions(
+    mut collision_events: MessageReader<CollisionStart>, // Replaced EventReader and CollisionStarted
+    player_query: Query<Entity, With<Player>>,
+    enemy_query: Query<Entity, With<Enemy>>,
+    mut ev_player_touched_enemy: MessageWriter<PlayerTouchedEnemyEvent>, // Replaced EventWriter
+) {
+    // Replaced get_single() with single()
+    let Ok(player_entity) = player_query.single() else { return; };
+
+    for collision in collision_events.read() {
+        // Replaced tuple indices (.0, .1) with named fields (.collider1, .collider2)
+        if (collision.collider1 == player_entity && enemy_query.contains(collision.collider2))
+            || (collision.collider2 == player_entity && enemy_query.contains(collision.collider1))
+        {
+            info!("Player touched the enemy!");
+            // Replaced send() with write()
+            ev_player_touched_enemy.write(PlayerTouchedEnemyEvent); 
         }
     }
 }
