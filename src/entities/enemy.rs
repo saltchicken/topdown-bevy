@@ -5,9 +5,10 @@ use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use serde::Deserialize;
 
-#[derive(Resource, Deserialize)]
+#[derive(Asset, TypePath, Deserialize, Clone)]
 pub struct EnemyConfig {
     pub speed: f32,
     pub scale: f32,
@@ -19,18 +20,11 @@ pub struct EnemyConfig {
     pub spawn_y: f32,
 }
 
-impl Default for EnemyConfig {
-    fn default() -> Self {
-        let config_str = include_str!("../../assets/data/enemy.ron");
-        ron::from_str(config_str).expect("Failed to parse enemy.ron configuration")
-    }
-}
-
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<EnemyConfig>()
+        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<EnemyConfig>::new(&["enemy.ron"]))
             .add_systems(OnEnter(GameState::Playing), spawn_enemy)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Enemy>)
             .add_systems(Update, animate_enemy.in_set(GameplaySet));
@@ -47,8 +41,9 @@ fn spawn_enemy(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    config: Res<EnemyConfig>,
+    enemy_configs: Res<Assets<EnemyConfig>>,
 ) {
+    let config = enemy_configs.get(&game_assets.enemy_config).expect("Enemy config should be loaded");
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(config.sprite_size, config.sprite_size),
         config.sprite_cols,

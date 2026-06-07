@@ -7,10 +7,11 @@ use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use leafwing_input_manager::prelude::*;
 use serde::Deserialize;
 
-#[derive(Resource, Deserialize)]
+#[derive(Asset, TypePath, Deserialize, Clone)]
 pub struct PlayerConfig {
     pub acceleration: f32,
     pub max_speed: f32,
@@ -22,18 +23,11 @@ pub struct PlayerConfig {
     pub walk_frame_duration: f32,
 }
 
-impl Default for PlayerConfig {
-    fn default() -> Self {
-        let config_str = include_str!("../../assets/data/player.ron");
-        ron::from_str(config_str).expect("Failed to parse player.ron configuration")
-    }
-}
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<PlayerConfig>()
+        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<PlayerConfig>::new(&["player.ron"]))
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
@@ -85,9 +79,10 @@ fn setup_game(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    config: Res<PlayerConfig>,
+    player_configs: Res<Assets<PlayerConfig>>,
     camera_query: Query<Entity, With<MainCamera>>,
 ) {
+    let config = player_configs.get(&game_assets.player_config).expect("Player config should be loaded");
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(config.sprite_size, config.sprite_size),
         config.sprite_cols,
@@ -136,10 +131,12 @@ fn setup_game(
 fn player_input(
     mut query: Query<&mut LinearVelocity, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
-    config: Res<PlayerConfig>,
+    game_assets: Res<GameAssets>,
+    player_configs: Res<Assets<PlayerConfig>>,
     time: Res<Time>, // Don't forget to add Time!
 ) {
     let Ok(mut velocity) = query.single_mut() else { return; };
+    let config = player_configs.get(&game_assets.player_config).expect("Player config should be loaded");
     let axis = action_state.clamped_axis_pair(&GameAction::Move);
     
     let direction = axis.clamp_length_max(1.0); 
@@ -193,8 +190,9 @@ fn player_animation_controller(
         (With<Player>, Changed<PlayerAnimationState>),
     >,
     animations: Res<GameAssets>,
-    config: Res<PlayerConfig>,
+    player_configs: Res<Assets<PlayerConfig>>,
 ) {
+    let config = player_configs.get(&animations.player_config).expect("Player config should be loaded");
     for (state, mut sprite, mut timer) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
         if state.is_walk() {
