@@ -12,7 +12,8 @@ use serde::Deserialize;
 
 #[derive(Resource, Deserialize)]
 pub struct PlayerConfig {
-    pub speed: f32,
+    pub acceleration: f32,
+    pub max_speed: f32,
     pub scale: f32,
     pub sprite_size: u32,
     pub sprite_cols: u32,
@@ -113,6 +114,7 @@ fn setup_game(
         Friction::new(0.0),
         Restitution::new(0.0),
         LinearVelocity::default(),
+        LinearDamping(10.0),
         LockedAxes::new().lock_rotation(),
         YSort(ZLayer::Entities),
         PlayerAnimationState::IdleDown,
@@ -135,13 +137,20 @@ fn player_input(
     mut query: Query<&mut LinearVelocity, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
     config: Res<PlayerConfig>,
+    time: Res<Time>, // Don't forget to add Time!
 ) {
     let Ok(mut velocity) = query.single_mut() else { return; };
     let axis = action_state.clamped_axis_pair(&GameAction::Move);
     
-    // Use clamp_length_max instead of normalize_or_zero for analog stick support!
     let direction = axis.clamp_length_max(1.0); 
-    velocity.0 = direction * config.speed;
+
+    if direction.length_squared() > 0.0 {
+        // Apply acceleration over time
+        velocity.0 += direction * config.acceleration * time.delta_secs();
+        
+        // Prevent the player from exceeding the speed limit
+        velocity.0 = velocity.0.clamp_length_max(config.max_speed);
+    }
 }
 
 // System 2: Observes velocity and updates the animation state
