@@ -36,13 +36,16 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (player_movement, player_animation_controller, animate_sprite).in_set(GameplaySet),
+                (player_input, update_player_state, apply_velocity, player_animation_controller, animate_sprite).in_set(GameplaySet),
             );
     }
 }
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component, Default)]
+pub struct Velocity(pub Vec2);
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
@@ -107,6 +110,7 @@ fn setup_game(
         },
         Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32()).with_scale(Vec3::splat(config.scale)),
         Player,
+        Velocity::default(),
         YSort(ZLayer::Entities),
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(
@@ -123,87 +127,61 @@ fn setup_game(
     }
 }
 
-// Logic Only: Reads inputs, updates Transform, and sets the intended PlayerAnimationState
-fn player_movement(
-    mut query: Query<(
-        &Player,
-        &mut Transform,
-        &mut PlayerAnimationState,
-    )>,
+// System 1: Only handles player intention
+fn player_input(
+    mut query: Query<&mut Velocity, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
-    time: Res<Time>,
     config: Res<PlayerConfig>,
 ) {
-    let Ok((_player, mut player_transform, mut animation_state)) = query.single_mut()
-    else {
-        return;
-    };
-
-    // Default to idle based on current facing direction
-    let mut new_state = match *animation_state {
-        PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown => {
-            PlayerAnimationState::IdleDown
-        }
-        PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp => PlayerAnimationState::IdleUp,
-        PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft => {
-            PlayerAnimationState::IdleLeft
-        }
-        PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight => {
-            PlayerAnimationState::IdleRight
-        }
-    };
-
+    let Ok(mut velocity) = query.single_mut() else { return; };
     let axis = action_state.clamped_axis_pair(&GameAction::Move);
-    let mut direction = axis.extend(0.0);
+    
+    // Use clamp_length_max instead of normalize_or_zero for analog stick support!
+    let direction = axis.clamp_length_max(1.0); 
+    velocity.0 = direction * config.speed;
+}
 
-    if direction != Vec3::ZERO {
-        if direction.x.abs() > direction.y.abs() {
-            if direction.x > 0.0 {
-                new_state = PlayerAnimationState::WalkRight;
+// System 2: Only handles actual physical movement
+fn apply_velocity(
+    mut query: Query<(&Velocity, &mut Transform)>,
+    time: Res<Time>,
+) {
+    for (velocity, mut transform) in &mut query {
+        transform.translation += velocity.0.extend(0.0) * time.delta_secs();
+    }
+}
+
+// System 3: Observes velocity and updates the animation state
+fn update_player_state(
+    mut query: Query<(&Velocity, &mut PlayerAnimationState), With<Player>>,
+) {
+    for (velocity, mut state) in &mut query {
+        let is_moving = velocity.0.length_squared() > 0.01;
+
+        let new_state = if is_moving {
+            // Determine direction based on the strongest velocity axis
+            if velocity.0.x.abs() > velocity.0.y.abs() {
+                if velocity.0.x > 0.0 { PlayerAnimationState::WalkRight } 
+                else { PlayerAnimationState::WalkLeft }
             } else {
-                new_state = PlayerAnimationState::WalkLeft;
-            }
-        } else if direction.y.abs() > direction.x.abs() {
-            if direction.y > 0.0 {
-                new_state = PlayerAnimationState::WalkUp;
-            } else {
-                new_state = PlayerAnimationState::WalkDown;
+                if velocity.0.y > 0.0 { PlayerAnimationState::WalkUp } 
+                else { PlayerAnimationState::WalkDown }
             }
         } else {
-            // Diagonal movement: gracefully maintain current axis preference
-            match *animation_state {
-                PlayerAnimationState::WalkRight | PlayerAnimationState::IdleRight if direction.x > 0.0 => {
-                    new_state = PlayerAnimationState::WalkRight;
-                }
-                PlayerAnimationState::WalkLeft | PlayerAnimationState::IdleLeft if direction.x < 0.0 => {
-                    new_state = PlayerAnimationState::WalkLeft;
-                }
-                PlayerAnimationState::WalkUp | PlayerAnimationState::IdleUp if direction.y > 0.0 => {
-                    new_state = PlayerAnimationState::WalkUp;
-                }
-                PlayerAnimationState::WalkDown | PlayerAnimationState::IdleDown if direction.y < 0.0 => {
-                    new_state = PlayerAnimationState::WalkDown;
-                }
-                _ => {
-                    if direction.x > 0.0 {
-                        new_state = PlayerAnimationState::WalkRight;
-                    } else {
-                        new_state = PlayerAnimationState::WalkLeft;
-                    }
-                }
+            // Fallback to idle based on current state
+            match *state {
+                PlayerAnimationState::WalkDown => PlayerAnimationState::IdleDown,
+                PlayerAnimationState::WalkUp => PlayerAnimationState::IdleUp,
+                PlayerAnimationState::WalkLeft => PlayerAnimationState::IdleLeft,
+                PlayerAnimationState::WalkRight => PlayerAnimationState::IdleRight,
+                _ => *state, // Keep current idle state
             }
+        };
+
+        if *state != new_state {
+            *state = new_state;
         }
     }
-
-    // Mutate the state only if it actually changed to prevent triggering Change Detection every frame
-    if *animation_state != new_state {
-        *animation_state = new_state;
-    }
-
-    // Apply movement
-    direction = direction.normalize_or_zero();
-
-    player_transform.translation += direction * config.speed * time.delta_secs();
 }
 
 // Visuals Only: Listens for changes to the animation state and updates visual components
