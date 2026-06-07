@@ -1,25 +1,9 @@
-mod core;
-mod entities;
-mod render;
-mod ui;
-
-use bevy::prelude::*;
-use core::camera::CameraPlugin;
-use core::input::InputPlugin;
-use core::state::StatePlugin;
-use bevy_ecs_tilemap::TilemapPlugin;
-use entities::map::MapPlugin;
-use entities::player::PlayerPlugin;
-use entities::enemy::EnemyPlugin;
 use avian2d::prelude::*;
-use render::y_sort::YSortPlugin;
-use ui::loading::LoadingPlugin;
-use ui::menu::MenuPlugin;
-use ui::pause_menu::PauseMenuPlugin;
+use bevy::prelude::*;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
-const WINDOW_TITLE: &str = "topdown";
+const WINDOW_TITLE: &str = "Physics Simulator Shell";
 
 fn main() {
     App::new()
@@ -32,20 +16,29 @@ fn main() {
             ..default()
         }))
         .add_plugins((
-            StatePlugin,
-            CameraPlugin,
-            InputPlugin,
-            LoadingPlugin,
-            MenuPlugin,
-            PauseMenuPlugin,
-            TilemapPlugin,
-            MapPlugin,
-            PlayerPlugin,
-            EnemyPlugin,
-            YSortPlugin,
             PhysicsPlugins::default(),
             PhysicsDebugPlugin::default(),
         ))
-        .insert_resource(Gravity(Vec2::ZERO))
+        .insert_resource(Gravity(Vec2::NEG_Y * 98.1))
+        .add_systems(Startup, setup_physics_scene)
         .run();
+}
+
+fn setup_physics_scene(mut commands: Commands) {
+    commands.spawn(Camera2d);
+
+    // Static Ground Environment
+    commands.spawn((
+        Transform::from_xyz(0.0, -100.0, 0.0),
+        RigidBody::Static,
+        Collider::rectangle(800.0, 20.0),
+    ));
+
+    // Dynamic Physics Object
+    commands.spawn((
+        Transform::from_xyz(0.0, 200.0, 0.0),
+        RigidBody::Dynamic,
+        Collider::circle(20.0),
+        Restitution::new(0.8),
+    ));
 }
