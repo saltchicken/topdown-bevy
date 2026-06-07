@@ -75,6 +75,7 @@ fn spawn_enemy(
         Collider::circle(8.0),
         Friction::new(0.0),
         Restitution::new(0.0),
+        LinearDamping(10.0),
         LockedAxes::new().lock_rotation(),
         YSort(ZLayer::Entities),
         EnemyAnimationTimer(Timer::from_seconds(config.frame_duration, TimerMode::Repeating)),
