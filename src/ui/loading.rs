@@ -3,6 +3,7 @@ use crate::core::utils::despawn_screen;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use crate::entities::enemy::EnemyConfig;
+use crate::entities::map::MapConfig;
 use crate::entities::player::PlayerConfig;
 
 pub struct LoadingPlugin;
@@ -29,6 +30,8 @@ struct LoadingUI;
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
+    #[asset(path = "data/level.map.ron")]
+    pub map_config: Handle<MapConfig>,
     #[asset(path = "data/stats.player.ron")]
     pub player_config: Handle<PlayerConfig>,
     #[asset(path = "data/stats.enemy.ron")]

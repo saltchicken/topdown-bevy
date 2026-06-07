@@ -4,13 +4,29 @@ use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use bevy_ecs_tilemap::prelude::*;
+use serde::Deserialize;
+use std::collections::HashMap;
+
+#[derive(Asset, TypePath, Deserialize, Clone)]
+pub struct MapConfig {
+    pub tile_mapping: HashMap<char, TileData>,
+    pub layout: Vec<String>,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct TileData {
+    pub texture_index: u32,
+    pub is_rigid_body: bool,
+}
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), spawn_map)
+        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<MapConfig>::new(&["map.ron"]))
+            .add_systems(OnEnter(GameState::Playing), spawn_map)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<MapEntity>);
     }
 }
@@ -18,9 +34,13 @@ impl Plugin for MapPlugin {
 #[derive(Component)]
 pub struct MapEntity;
 
-fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
-    let map_data = include_str!("../../assets/data/map.txt");
-    let lines: Vec<&str> = map_data.lines().filter(|l| !l.is_empty()).collect();
+fn spawn_map(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    map_configs: Res<Assets<MapConfig>>,
+) {
+    let config = map_configs.get(&game_assets.map_config).expect("Map config should be loaded");
+    let lines = &config.layout;
     let size_y = lines.len() as u32;
     let size_x = if size_y > 0 { lines[0].len() as u32 } else { 0 };
 
@@ -38,20 +58,15 @@ fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
             let x = col as u32;
             let tile_pos = TilePos { x, y };
             
-            let texture_index = match ch {
-                '.' => 0, // Grass
-                ',' => 1, // Dirt
-                '~' => 2, // Water
-                '#' => 3, // Stone
-                _ => 0,
-            };
+            let default_tile = TileData { texture_index: 0, is_rigid_body: false };
+            let tile_data = config.tile_mapping.get(&ch).unwrap_or(&default_tile);
 
             let tile_entity = commands
                 .spawn((
                     TileBundle {
                         position: tile_pos,
                         tilemap_id: TilemapId(tilemap_entity),
-                        texture_index: TileTextureIndex(texture_index),
+                        texture_index: TileTextureIndex(tile_data.texture_index),
                         ..Default::default()
                     },
                     MapEntity,
@@ -59,7 +74,7 @@ fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
                 .id();
             tile_storage.set(&tile_pos, tile_entity);
 
-            if ch == '#' {
+            if tile_data.is_rigid_body {
                 let collider_entity = commands.spawn((
                     Collider::rectangle(tile_size.x, tile_size.y),
                     RigidBody::Static,
