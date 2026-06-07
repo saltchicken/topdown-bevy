@@ -44,6 +44,7 @@ fn main() {
             EnemyPlugin,
             YSortPlugin,
             PhysicsPlugins::default(),
+            PhysicsDebugPlugin::default(),
         ))
         .insert_resource(Gravity(Vec2::ZERO))
         .run();
