@@ -32,13 +32,20 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (player_input, update_player_state, player_animation_controller, animate_sprite).in_set(GameplaySet),
+                (read_player_input, update_player_state, player_animation_controller, animate_sprite).in_set(GameplaySet),
+            )
+            .add_systems(
+                FixedUpdate,
+                apply_player_movement.in_set(GameplaySet),
             );
     }
 }
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component, Default)]
+struct MovementIntent(Vec2);
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
@@ -104,6 +111,7 @@ fn setup_game(
         },
         Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32()).with_scale(Vec3::splat(config.scale)),
         Player,
+        MovementIntent::default(),
         RigidBody::Dynamic,
         Collider::circle(8.0),
         Friction::new(0.0),
@@ -127,23 +135,29 @@ fn setup_game(
     }
 }
 
-// System 1: Only handles player intention
-fn player_input(
-    mut query: Query<&mut LinearVelocity, With<Player>>,
+// Read player intention from input
+fn read_player_input(
+    mut query: Query<&mut MovementIntent, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
+) {
+    let Ok(mut intent) = query.single_mut() else { return; };
+    let axis = action_state.clamped_axis_pair(&GameAction::Move);
+    intent.0 = axis.clamp_length_max(1.0);
+}
+
+// Apply movement logic and physics in FixedUpdate
+fn apply_player_movement(
+    mut query: Query<(&MovementIntent, &mut LinearVelocity), With<Player>>,
     game_assets: Res<GameAssets>,
     player_configs: Res<Assets<PlayerConfig>>,
-    time: Res<Time>, // Don't forget to add Time!
+    time: Res<Time>,
 ) {
-    let Ok(mut velocity) = query.single_mut() else { return; };
+    let Ok((intent, mut velocity)) = query.single_mut() else { return; };
     let config = player_configs.get(&game_assets.player_config).expect("Player config should be loaded");
-    let axis = action_state.clamped_axis_pair(&GameAction::Move);
-    
-    let direction = axis.clamp_length_max(1.0); 
 
-    if direction.length_squared() > 0.0 {
+    if intent.0.length_squared() > 0.0 {
         // Apply acceleration over time
-        velocity.0 += direction * config.acceleration * time.delta_secs();
+        velocity.0 += intent.0 * config.acceleration * time.delta_secs();
         
         // Prevent the player from exceeding the speed limit
         velocity.0 = velocity.0.clamp_length_max(config.max_speed);
