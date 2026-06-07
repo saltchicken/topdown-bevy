@@ -1,44 +1,50 @@
-use avian2d::prelude::*;
-use bevy::prelude::*;
-
-const WINDOW_WIDTH: f32 = 1280.0;
-const WINDOW_HEIGHT: f32 = 720.0;
-const WINDOW_TITLE: &str = "Physics Simulator Shell";
+use bevy::{
+    core_pipeline::{
+        core_2d::graph::Node2d,
+        fullscreen_material::{FullscreenMaterial, FullscreenMaterialPlugin},
+    },
+    prelude::*,
+    render::{
+        extract_component::ExtractComponent,
+        render_graph::{InternedRenderLabel, RenderLabel},
+        render_resource::ShaderType,
+    },
+    shader::ShaderRef,
+};
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                resolution: (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32).into(),
-                title: WINDOW_TITLE.into(),
-                ..default()
-            }),
-            ..default()
-        }))
         .add_plugins((
-            PhysicsPlugins::default(),
-            PhysicsDebugPlugin::default(),
+            DefaultPlugins,
+            FullscreenMaterialPlugin::<FullscreenEffect>::default(),
         ))
-        .insert_resource(Gravity(Vec2::NEG_Y * 98.1))
-        .add_systems(Startup, setup_physics_scene)
+        .add_systems(Startup, setup)
         .run();
 }
 
-fn setup_physics_scene(mut commands: Commands) {
-    commands.spawn(Camera2d);
-
-    // Static Ground Environment
+fn setup(mut commands: Commands) {
     commands.spawn((
-        Transform::from_xyz(0.0, -100.0, 0.0),
-        RigidBody::Static,
-        Collider::rectangle(800.0, 20.0),
+        Camera2d,
+        FullscreenEffect { intensity: 0.8 },
     ));
+}
 
-    // Dynamic Physics Object
-    commands.spawn((
-        Transform::from_xyz(0.0, 200.0, 0.0),
-        RigidBody::Dynamic,
-        Collider::circle(20.0),
-        Restitution::new(0.8),
-    ));
+#[derive(Component, ExtractComponent, Clone, Copy, ShaderType, Default)]
+struct FullscreenEffect {
+    intensity: f32,
+}
+
+impl FullscreenMaterial for FullscreenEffect {
+    // Use the updated ShaderRef return type
+    fn fragment_shader() -> ShaderRef {
+        "shaders/fullscreen_effect.wgsl".into()
+    }
+
+    fn node_edges() -> Vec<InternedRenderLabel> {
+        vec![
+            Node2d::Tonemapping.intern(),
+            Self::node_label().intern(),
+            Node2d::EndMainPassPostProcessing.intern(),
+        ]
+    }
 }
