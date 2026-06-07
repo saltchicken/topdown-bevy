@@ -3,6 +3,7 @@ use crate::core::utils::despawn_screen;
 use crate::render::y_sort::YSort;
 use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use serde::Deserialize;
 
@@ -70,6 +71,11 @@ fn spawn_enemy(
         Transform::from_xyz(config.spawn_x, config.spawn_y, ZLayer::Entities.to_f32())
             .with_scale(Vec3::splat(config.scale)),
         Enemy,
+        RigidBody::Dynamic,
+        Collider::circle(8.0),
+        Friction::new(0.0),
+        Restitution::new(0.0),
+        LockedAxes::new().lock_rotation(),
         YSort(ZLayer::Entities),
         EnemyAnimationTimer(Timer::from_seconds(config.frame_duration, TimerMode::Repeating)),
     ));

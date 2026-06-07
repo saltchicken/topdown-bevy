@@ -2,6 +2,7 @@ use crate::core::state::GameState;
 use crate::core::utils::despawn_screen;
 use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
@@ -57,6 +58,21 @@ fn spawn_map(mut commands: Commands, game_assets: Res<GameAssets>) {
                 ))
                 .id();
             tile_storage.set(&tile_pos, tile_entity);
+
+            if ch == '#' {
+                let collider_entity = commands.spawn((
+                    Collider::rectangle(tile_size.x, tile_size.y),
+                    RigidBody::Static,
+                    Friction::new(0.0),
+                    Restitution::new(0.0),
+                    Transform::from_xyz(
+                        x as f32 * tile_size.x,
+                        y as f32 * tile_size.y,
+                        0.0,
+                    ),
+                )).id();
+                commands.entity(tilemap_entity).add_child(collider_entity);
+            }
         }
     }
 

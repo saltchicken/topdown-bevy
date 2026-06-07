@@ -5,6 +5,7 @@ use crate::core::utils::despawn_screen;
 use crate::render::y_sort::YSort;
 use crate::render::z_layers::ZLayer;
 use crate::ui::loading::GameAssets;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use serde::Deserialize;
@@ -36,16 +37,13 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (player_input, update_player_state, apply_velocity, player_animation_controller, animate_sprite).in_set(GameplaySet),
+                (player_input, update_player_state, player_animation_controller, animate_sprite).in_set(GameplaySet),
             );
     }
 }
 
 #[derive(Component)]
 pub struct Player;
-
-#[derive(Component, Default)]
-pub struct Velocity(pub Vec2);
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
@@ -110,7 +108,12 @@ fn setup_game(
         },
         Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32()).with_scale(Vec3::splat(config.scale)),
         Player,
-        Velocity::default(),
+        RigidBody::Dynamic,
+        Collider::circle(8.0),
+        Friction::new(0.0),
+        Restitution::new(0.0),
+        LinearVelocity::default(),
+        LockedAxes::new().lock_rotation(),
         YSort(ZLayer::Entities),
         PlayerAnimationState::IdleDown,
         AnimationTimer(Timer::from_seconds(
@@ -129,7 +132,7 @@ fn setup_game(
 
 // System 1: Only handles player intention
 fn player_input(
-    mut query: Query<&mut Velocity, With<Player>>,
+    mut query: Query<&mut LinearVelocity, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
     config: Res<PlayerConfig>,
 ) {
@@ -141,19 +144,9 @@ fn player_input(
     velocity.0 = direction * config.speed;
 }
 
-// System 2: Only handles actual physical movement
-fn apply_velocity(
-    mut query: Query<(&Velocity, &mut Transform)>,
-    time: Res<Time>,
-) {
-    for (velocity, mut transform) in &mut query {
-        transform.translation += velocity.0.extend(0.0) * time.delta_secs();
-    }
-}
-
-// System 3: Observes velocity and updates the animation state
+// System 2: Observes velocity and updates the animation state
 fn update_player_state(
-    mut query: Query<(&Velocity, &mut PlayerAnimationState), With<Player>>,
+    mut query: Query<(&LinearVelocity, &mut PlayerAnimationState), With<Player>>,
 ) {
     for (velocity, mut state) in &mut query {
         let is_moving = velocity.0.length_squared() > 0.01;
