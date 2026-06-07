@@ -119,6 +119,7 @@ fn setup_game(
         MovementIntent::default(),
         RigidBody::Dynamic,
         Collider::circle(8.0),
+        CollisionEventsEnabled,
         Friction::new(0.0),
         Restitution::new(0.0),
         LinearVelocity::default(),
@@ -260,21 +261,18 @@ fn animate_sprite(
 }
 
 fn handle_player_enemy_collisions(
-    mut collision_events: MessageReader<CollisionStart>, // Replaced EventReader and CollisionStarted
+    mut collision_events: MessageReader<CollisionStart>, 
     player_query: Query<Entity, With<Player>>,
     enemy_query: Query<Entity, With<Enemy>>,
-    mut ev_player_touched_enemy: MessageWriter<PlayerTouchedEnemyEvent>, // Replaced EventWriter
+    mut ev_player_touched_enemy: MessageWriter<PlayerTouchedEnemyEvent>,
 ) {
-    // Replaced get_single() with single()
     let Ok(player_entity) = player_query.single() else { return; };
 
     for collision in collision_events.read() {
-        // Replaced tuple indices (.0, .1) with named fields (.collider1, .collider2)
         if (collision.collider1 == player_entity && enemy_query.contains(collision.collider2))
             || (collision.collider2 == player_entity && enemy_query.contains(collision.collider1))
         {
             info!("Player touched the enemy!");
-            // Replaced send() with write()
             ev_player_touched_enemy.write(PlayerTouchedEnemyEvent); 
         }
     }

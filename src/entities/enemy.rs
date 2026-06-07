@@ -68,6 +68,7 @@ fn spawn_enemy(
         Enemy,
         RigidBody::Dynamic,
         Collider::circle(8.0),
+        CollisionEventsEnabled,
         Friction::new(0.0),
         Restitution::new(0.0),
         LinearDamping(10.0),
