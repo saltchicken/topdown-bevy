@@ -1,29 +1,15 @@
 use avian2d::prelude::*;
 use bevy::{
     prelude::*,
-    reflect::TypePath,
-    render::render_resource::AsBindGroup,
-    shader::ShaderRef,
-    sprite_render::{Material2d, Material2dPlugin},
+    sprite_render::Material2dPlugin,
 };
+
+mod material;
+use material::CustomMaterial;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
 const WINDOW_TITLE: &str = "Physics Simulator Shell";
-
-// --- 1. Define your Custom Material ---
-#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-struct CustomMaterial {
-    #[uniform(0)]
-    color: LinearRgba,
-}
-
-impl Material2d for CustomMaterial {
-    fn fragment_shader() -> ShaderRef {
-        // This path is relative to the `assets/` folder
-        "shaders/custom_material.wgsl".into()
-    }
-}
 
 fn main() {
     App::new()
