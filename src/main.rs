@@ -3,15 +3,15 @@ mod entities;
 mod render;
 mod ui;
 
+use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_ecs_tilemap::TilemapPlugin;
 use core::camera::CameraPlugin;
 use core::input::InputPlugin;
 use core::state::StatePlugin;
-use bevy_ecs_tilemap::TilemapPlugin;
+use entities::enemy::EnemyPlugin;
 use entities::map::MapPlugin;
 use entities::player::PlayerPlugin;
-use entities::enemy::EnemyPlugin;
-use avian2d::prelude::*;
 use render::y_sort::YSortPlugin;
 use ui::loading::LoadingPlugin;
 use ui::menu::MenuPlugin;

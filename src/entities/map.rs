@@ -25,9 +25,11 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<MapConfig>::new(&["map.ron"]))
-            .add_systems(OnEnter(GameState::Playing), spawn_map)
-            .add_systems(OnExit(GameState::Playing), despawn_screen::<MapEntity>);
+        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<MapConfig>::new(
+            &["map.ron"],
+        ))
+        .add_systems(OnEnter(GameState::Playing), spawn_map)
+        .add_systems(OnExit(GameState::Playing), despawn_screen::<MapEntity>);
     }
 }
 
@@ -39,12 +41,17 @@ fn spawn_map(
     game_assets: Res<GameAssets>,
     map_configs: Res<Assets<MapConfig>>,
 ) {
-    let config = map_configs.get(&game_assets.map_config).expect("Map config should be loaded");
+    let config = map_configs
+        .get(&game_assets.map_config)
+        .expect("Map config should be loaded");
     let lines = &config.layout;
     let size_y = lines.len() as u32;
     let size_x = if size_y > 0 { lines[0].len() as u32 } else { 0 };
 
-    let tilemap_size = TilemapSize { x: size_x, y: size_y };
+    let tilemap_size = TilemapSize {
+        x: size_x,
+        y: size_y,
+    };
     let tile_size = TilemapTileSize { x: 32.0, y: 32.0 };
     let grid_size = tile_size.into();
     let map_type = TilemapType::Square;
@@ -57,8 +64,11 @@ fn spawn_map(
         for (col, ch) in line.chars().enumerate() {
             let x = col as u32;
             let tile_pos = TilePos { x, y };
-            
-            let default_tile = TileData { texture_index: 0, is_rigid_body: false };
+
+            let default_tile = TileData {
+                texture_index: 0,
+                is_rigid_body: false,
+            };
             let tile_data = config.tile_mapping.get(&ch).unwrap_or(&default_tile);
 
             let tile_entity = commands
@@ -75,17 +85,15 @@ fn spawn_map(
             tile_storage.set(&tile_pos, tile_entity);
 
             if tile_data.is_rigid_body {
-                let collider_entity = commands.spawn((
-                    Collider::rectangle(tile_size.x, tile_size.y),
-                    RigidBody::Static,
-                    Friction::new(0.0),
-                    Restitution::new(0.0),
-                    Transform::from_xyz(
-                        x as f32 * tile_size.x,
-                        y as f32 * tile_size.y,
-                        0.0,
-                    ),
-                )).id();
+                let collider_entity = commands
+                    .spawn((
+                        Collider::rectangle(tile_size.x, tile_size.y),
+                        RigidBody::Static,
+                        Friction::new(0.0),
+                        Restitution::new(0.0),
+                        Transform::from_xyz(x as f32 * tile_size.x, y as f32 * tile_size.y, 0.0),
+                    ))
+                    .id();
                 commands.entity(tilemap_entity).add_child(collider_entity);
             }
         }

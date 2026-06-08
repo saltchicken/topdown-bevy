@@ -31,18 +31,25 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-            app.add_message::<PlayerTouchedEnemyEvent>()
-            .add_plugins(bevy_common_assets::ron::RonAssetPlugin::<PlayerConfig>::new(&["player.ron"]))
+        app.add_message::<PlayerTouchedEnemyEvent>()
+            .add_plugins(
+                bevy_common_assets::ron::RonAssetPlugin::<PlayerConfig>::new(&["player.ron"]),
+            )
             .add_systems(OnEnter(GameState::Playing), setup_game)
             .add_systems(OnExit(GameState::Playing), despawn_screen::<Player>)
             .add_systems(
                 Update,
-                (read_player_input, update_player_state, player_animation_controller, animate_sprite, handle_player_enemy_collisions).in_set(GameplaySet),
+                (
+                    read_player_input,
+                    update_player_state,
+                    player_animation_controller,
+                    animate_sprite,
+                    handle_player_enemy_collisions,
+                    handle_hit_duration,
+                )
+                    .in_set(GameplaySet),
             )
-            .add_systems(
-                FixedUpdate,
-                apply_player_movement.in_set(GameplaySet),
-            );
+            .add_systems(FixedUpdate, apply_player_movement.in_set(GameplaySet));
     }
 }
 
@@ -54,6 +61,19 @@ struct MovementIntent(Vec2);
 
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
+
+#[derive(Component)]
+pub struct Hit {
+    pub timer: Timer,
+}
+
+impl Default for Hit {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(1.0, TimerMode::Once),
+        }
+    }
+}
 
 #[derive(Component, PartialEq, Clone, Copy)]
 enum PlayerAnimationState {
@@ -94,7 +114,9 @@ fn setup_game(
     player_configs: Res<Assets<PlayerConfig>>,
     camera_query: Query<Entity, With<MainCamera>>,
 ) {
-    let config = player_configs.get(&game_assets.player_config).expect("Player config should be loaded");
+    let config = player_configs
+        .get(&game_assets.player_config)
+        .expect("Player config should be loaded");
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(config.sprite_size, config.sprite_size),
         config.sprite_cols,
@@ -105,33 +127,36 @@ fn setup_game(
     let player_layout = texture_atlas_layouts.add(layout);
 
     // Spawn the player with the idle texture by default
-    let player_entity = commands.spawn((
-        Sprite {
-            image: game_assets.player_idle.clone(),
-            texture_atlas: Some(TextureAtlas {
-                layout: player_layout,
-                index: 0,
-            }),
-            ..default()
-        },
-        Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32()).with_scale(Vec3::splat(config.scale)),
-        Player,
-        MovementIntent::default(),
-        RigidBody::Dynamic,
-        Collider::circle(8.0),
-        CollisionEventsEnabled,
-        Friction::new(0.0),
-        Restitution::new(0.0),
-        LinearVelocity::default(),
-        LinearDamping(10.0),
-        LockedAxes::new().lock_rotation(),
-        YSort(ZLayer::Entities),
-        PlayerAnimationState::IdleDown,
-        AnimationTimer(Timer::from_seconds(
-            config.idle_frame_duration,
-            TimerMode::Repeating,
-        )),
-    )).id();
+    let player_entity = commands
+        .spawn((
+            Sprite {
+                image: game_assets.player_idle.clone(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: player_layout,
+                    index: 0,
+                }),
+                ..default()
+            },
+            Transform::from_xyz(0.0, 0.0, ZLayer::Entities.to_f32())
+                .with_scale(Vec3::splat(config.scale)),
+            Player,
+            MovementIntent::default(),
+            RigidBody::Dynamic,
+            Collider::circle(8.0),
+            CollisionEventsEnabled,
+            Friction::new(0.0),
+            Restitution::new(0.0),
+            LinearVelocity::default(),
+            LinearDamping(10.0),
+            LockedAxes::new().lock_rotation(),
+            YSort(ZLayer::Entities),
+            PlayerAnimationState::IdleDown,
+            AnimationTimer(Timer::from_seconds(
+                config.idle_frame_duration,
+                TimerMode::Repeating,
+            )),
+        ))
+        .id();
 
     if let Ok(camera_entity) = camera_query.single() {
         commands.entity(camera_entity).insert(CameraFollow {
@@ -146,7 +171,9 @@ fn read_player_input(
     mut query: Query<&mut MovementIntent, With<Player>>,
     action_state: Res<ActionState<GameAction>>,
 ) {
-    let Ok(mut intent) = query.single_mut() else { return; };
+    let Ok(mut intent) = query.single_mut() else {
+        return;
+    };
     let axis = action_state.clamped_axis_pair(&GameAction::Move);
     intent.0 = axis.clamp_length_max(1.0);
 }
@@ -158,13 +185,17 @@ fn apply_player_movement(
     player_configs: Res<Assets<PlayerConfig>>,
     time: Res<Time>,
 ) {
-    let Ok((intent, mut velocity)) = query.single_mut() else { return; };
-    let config = player_configs.get(&game_assets.player_config).expect("Player config should be loaded");
+    let Ok((intent, mut velocity)) = query.single_mut() else {
+        return;
+    };
+    let config = player_configs
+        .get(&game_assets.player_config)
+        .expect("Player config should be loaded");
 
     if intent.0.length_squared() > 0.0 {
         // Apply acceleration over time
         velocity.0 += intent.0 * config.acceleration * time.delta_secs();
-        
+
         // Prevent the player from exceeding the speed limit
         velocity.0 = velocity.0.clamp_length_max(config.max_speed);
     }
@@ -180,11 +211,17 @@ fn update_player_state(
         let new_state = if is_moving {
             // Determine direction based on the strongest velocity axis
             if velocity.0.x.abs() > velocity.0.y.abs() {
-                if velocity.0.x > 0.0 { PlayerAnimationState::WalkRight } 
-                else { PlayerAnimationState::WalkLeft }
+                if velocity.0.x > 0.0 {
+                    PlayerAnimationState::WalkRight
+                } else {
+                    PlayerAnimationState::WalkLeft
+                }
             } else {
-                if velocity.0.y > 0.0 { PlayerAnimationState::WalkUp } 
-                else { PlayerAnimationState::WalkDown }
+                if velocity.0.y > 0.0 {
+                    PlayerAnimationState::WalkUp
+                } else {
+                    PlayerAnimationState::WalkDown
+                }
             }
         } else {
             // Fallback to idle based on current state
@@ -212,7 +249,9 @@ fn player_animation_controller(
     animations: Res<GameAssets>,
     player_configs: Res<Assets<PlayerConfig>>,
 ) {
-    let config = player_configs.get(&animations.player_config).expect("Player config should be loaded");
+    let config = player_configs
+        .get(&animations.player_config)
+        .expect("Player config should be loaded");
     for (state, mut sprite, mut timer) in &mut query {
         // Swap out the underlying sprite sheet image if we are crossing action boundaries
         if state.is_walk() {
@@ -261,19 +300,44 @@ fn animate_sprite(
 }
 
 fn handle_player_enemy_collisions(
-    mut collision_events: MessageReader<CollisionStart>, 
-    player_query: Query<Entity, With<Player>>,
+    mut commands: Commands,
+    mut collision_events: MessageReader<CollisionStart>,
+    player_query: Query<(Entity, Option<&Hit>), With<Player>>,
     enemy_query: Query<Entity, With<Enemy>>,
     mut ev_player_touched_enemy: MessageWriter<PlayerTouchedEnemyEvent>,
 ) {
-    let Ok(player_entity) = player_query.single() else { return; };
+    // We use get_single() here to safely unwrap the tuple
+    let Ok((player_entity, hit_component)) = player_query.single() else {
+        return;
+    };
 
     for collision in collision_events.read() {
         if (collision.collider1 == player_entity && enemy_query.contains(collision.collider2))
             || (collision.collider2 == player_entity && enemy_query.contains(collision.collider1))
         {
-            info!("Player touched the enemy!");
-            ev_player_touched_enemy.write(PlayerTouchedEnemyEvent); 
+            // Only apply the hit logic if the player doesn't already have the component
+            if hit_component.is_none() {
+                info!("Player touched the enemy!");
+                ev_player_touched_enemy.write(PlayerTouchedEnemyEvent);
+
+                // Give the player the hit component
+                commands.entity(player_entity).insert(Hit::default());
+            }
+        }
+    }
+}
+
+fn handle_hit_duration(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Hit)>,
+) {
+    for (entity, mut hit) in &mut query {
+        hit.timer.tick(time.delta());
+
+        if hit.timer.just_finished() {
+            commands.entity(entity).remove::<Hit>();
+            info!("Hit component removed!");
         }
     }
 }

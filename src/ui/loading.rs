@@ -1,10 +1,10 @@
 use crate::core::state::GameState;
 use crate::core::utils::despawn_screen;
-use bevy::prelude::*;
-use bevy_asset_loader::prelude::*;
 use crate::entities::enemy::EnemyConfig;
 use crate::entities::map::MapConfig;
 use crate::entities::player::PlayerConfig;
+use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
 pub struct LoadingPlugin;
 

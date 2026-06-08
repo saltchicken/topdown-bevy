@@ -41,7 +41,8 @@ fn camera_follow(
     // Preserve the camera's Z position while setting the XY target
     let target = target_pos.truncate().extend(camera_transform.translation.z);
 
-    camera_transform.translation = camera_transform
-        .translation
-        .lerp(target, 1.0 - f32::exp(-camera_follow.decay_rate * time.delta_secs()));
+    camera_transform.translation = camera_transform.translation.lerp(
+        target,
+        1.0 - f32::exp(-camera_follow.decay_rate * time.delta_secs()),
+    );
 }

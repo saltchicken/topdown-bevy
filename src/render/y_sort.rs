@@ -1,4 +1,4 @@
-use crate::render::z_layers::{ZLayer, Y_SORT_MULTIPLIER};
+use crate::render::z_layers::{Y_SORT_MULTIPLIER, ZLayer};
 use bevy::prelude::*;
 
 pub struct YSortPlugin;

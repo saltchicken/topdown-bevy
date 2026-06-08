@@ -24,10 +24,12 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<EnemyConfig>::new(&["enemy.ron"]))
-            .add_systems(OnEnter(GameState::Playing), spawn_enemy)
-            .add_systems(OnExit(GameState::Playing), despawn_screen::<Enemy>)
-            .add_systems(Update, animate_enemy.in_set(GameplaySet));
+        app.add_plugins(bevy_common_assets::ron::RonAssetPlugin::<EnemyConfig>::new(
+            &["enemy.ron"],
+        ))
+        .add_systems(OnEnter(GameState::Playing), spawn_enemy)
+        .add_systems(OnExit(GameState::Playing), despawn_screen::<Enemy>)
+        .add_systems(Update, animate_enemy.in_set(GameplaySet));
     }
 }
 
@@ -43,7 +45,9 @@ fn spawn_enemy(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     enemy_configs: Res<Assets<EnemyConfig>>,
 ) {
-    let config = enemy_configs.get(&game_assets.enemy_config).expect("Enemy config should be loaded");
+    let config = enemy_configs
+        .get(&game_assets.enemy_config)
+        .expect("Enemy config should be loaded");
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(config.sprite_size, config.sprite_size),
         config.sprite_cols,
@@ -74,7 +78,10 @@ fn spawn_enemy(
         LinearDamping(10.0),
         LockedAxes::new().lock_rotation(),
         YSort(ZLayer::Entities),
-        EnemyAnimationTimer(Timer::from_seconds(config.frame_duration, TimerMode::Repeating)),
+        EnemyAnimationTimer(Timer::from_seconds(
+            config.frame_duration,
+            TimerMode::Repeating,
+        )),
     ));
 }
 
