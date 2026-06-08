@@ -1,9 +1,15 @@
 use bevy::prelude::*;
+use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
 const WINDOW_TITLE: &str = "Physics Simulator Shell";
+
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
+pub enum PlayerAction {
+    Toggle,
+}
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -13,8 +19,8 @@ pub struct Inactive;
 #[component(storage = "SparseSet")]
 pub struct Active;
 
-fn space_pressed(In(_): In<Entity>, keys: Res<ButtonInput<KeyCode>>) -> bool {
-    keys.just_pressed(KeyCode::Space)
+fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
+    query.get(entity).is_ok_and(|action_state| action_state.just_pressed(&PlayerAction::Toggle))
 }
 
 fn update_color(
@@ -42,6 +48,7 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugins(InputManagerPlugin::<PlayerAction>::default())
         .add_plugins(StateMachinePlugin::default())
         .add_systems(Startup, setup_scene)
         .add_systems(Update, update_color)
@@ -60,7 +67,9 @@ fn setup_scene(mut commands: Commands) {
         Transform::from_xyz(0.0, 0.0, 0.0),
         Inactive,
         StateMachine::default()
-            .trans::<Inactive, _>(space_pressed, Active)
-            .trans::<Active, _>(space_pressed, Inactive),
+            .trans::<Inactive, _>(toggle_pressed, Active)
+            .trans::<Active, _>(toggle_pressed, Inactive),
+        InputMap::default().with(PlayerAction::Toggle, KeyCode::Space),
+        ActionState::<PlayerAction>::default(),
     ));
 }
