@@ -1,10 +1,8 @@
-pub mod player;
-pub mod states;
+pub mod entities;
 
 use bevy::prelude::*;
 use seldom_state::prelude::*;
-use states::{active::*, inactive::*};
-use player::PlayerPlugin;
+use entities::player::PlayerPlugin;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -21,7 +19,7 @@ fn main() {
             ..default()
         }))
         .add_plugins(StateMachinePlugin::default())
-        .add_plugins((InactivePlugin, ActivePlugin, PlayerPlugin))
+        .add_plugins(PlayerPlugin)
         .add_systems(Startup, setup_scene)
         .run();
 }

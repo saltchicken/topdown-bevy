@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
-use crate::states::{active::*, inactive::*};
+use self::states::{active::*, inactive::*};
+
+pub mod states;
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
@@ -21,6 +23,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
+            .add_plugins((ActivePlugin, InactivePlugin))
             .add_systems(Startup, setup_player);
     }
 }
