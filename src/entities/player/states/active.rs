@@ -33,8 +33,7 @@ fn on_update(
     for (mut transform, action_state) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);
 
-        if direction != Vec2::ZERO {
-            transform.translation += direction.normalize().extend(0.0) * 300.0 * time.delta_secs();
-        }
+        let velocity = direction.normalize_or_zero() * 300.0 * time.delta_secs();
+        transform.translation += velocity.extend(0.0);
     }
 }
