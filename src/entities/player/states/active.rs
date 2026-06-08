@@ -31,19 +31,7 @@ fn on_update(
     mut query: Query<(&mut Transform, &ActionState<PlayerAction>), With<Active>>,
 ) {
     for (mut transform, action_state) in &mut query {
-        let mut direction = Vec2::ZERO;
-        if action_state.pressed(&PlayerAction::Up) {
-            direction.y += 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Down) {
-            direction.y -= 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Left) {
-            direction.x -= 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Right) {
-            direction.x += 1.0;
-        }
+        let direction = action_state.axis_pair(&PlayerAction::Move);
 
         if direction != Vec2::ZERO {
             transform.translation += direction.normalize().extend(0.0) * 300.0 * time.delta_secs();
