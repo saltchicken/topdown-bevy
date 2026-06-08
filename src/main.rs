@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
-const WINDOW_TITLE: &str = "Physics Simulator Shell";
+const WINDOW_TITLE: &str = "Hello World";
 
 fn main() {
     App::new()
