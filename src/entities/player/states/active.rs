@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use crate::entities::player::PlayerAction;
+use crate::input::PlayerAction;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]

@@ -2,17 +2,9 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 use self::states::{active::*, inactive::*};
+use crate::input::PlayerAction;
 
 pub mod states;
-
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
-pub enum PlayerAction {
-    Toggle,
-    Up,
-    Down,
-    Left,
-    Right,
-}
 
 fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     query.get(entity).is_ok_and(|action_state| action_state.just_pressed(&PlayerAction::Toggle))
@@ -22,8 +14,7 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_plugins((ActivePlugin, InactivePlugin))
+        app.add_plugins((ActivePlugin, InactivePlugin))
             .add_systems(Startup, setup_player);
     }
 }
@@ -40,12 +31,7 @@ fn setup_player(mut commands: Commands) {
         StateMachine::default()
             .trans::<Inactive, _>(toggle_pressed, Active)
             .trans::<Active, _>(toggle_pressed, Inactive),
-        InputMap::default()
-            .with(PlayerAction::Toggle, KeyCode::Space)
-            .with(PlayerAction::Up, KeyCode::KeyW)
-            .with(PlayerAction::Down, KeyCode::KeyS)
-            .with(PlayerAction::Left, KeyCode::KeyA)
-            .with(PlayerAction::Right, KeyCode::KeyD),
+        PlayerAction::default_input_map(),
         ActionState::<PlayerAction>::default(),
     ));
 }

@@ -1,4 +1,5 @@
 pub mod entities;
+pub mod input;
 
 use bevy::prelude::*;
 use seldom_state::prelude::*;
@@ -19,6 +20,7 @@ fn main() {
             ..default()
         }))
         .add_plugins(StateMachinePlugin::default())
+        .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
         .add_systems(Startup, setup_scene)
         .run();
