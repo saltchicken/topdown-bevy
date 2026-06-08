@@ -6,6 +6,8 @@ mod ui;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::TilemapPlugin;
+use seldom_state::prelude::*;
+
 use core::camera::CameraPlugin;
 use core::input::InputPlugin;
 use core::state::StatePlugin;
@@ -45,6 +47,7 @@ fn main() {
             YSortPlugin,
             PhysicsPlugins::default(),
             PhysicsDebugPlugin::default(),
+            StateMachinePlugin::default(),
         ))
         .insert_resource(Gravity(Vec2::ZERO))
         .run();
