@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.18", features = ["wayland"] }
+seldom_state = "0.16.0"
