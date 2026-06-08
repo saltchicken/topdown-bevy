@@ -9,6 +9,10 @@ const WINDOW_TITLE: &str = "Physics Simulator Shell";
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
     Toggle,
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 #[derive(Clone, Copy, Component, Reflect)]
@@ -21,6 +25,31 @@ pub struct Active;
 
 fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     query.get(entity).is_ok_and(|action_state| action_state.just_pressed(&PlayerAction::Toggle))
+}
+
+fn player_movement(
+    time: Res<Time>,
+    mut query: Query<(&mut Transform, &ActionState<PlayerAction>)>,
+) {
+    for (mut transform, action_state) in &mut query {
+        let mut direction = Vec2::ZERO;
+        if action_state.pressed(&PlayerAction::Up) {
+            direction.y += 1.0;
+        }
+        if action_state.pressed(&PlayerAction::Down) {
+            direction.y -= 1.0;
+        }
+        if action_state.pressed(&PlayerAction::Left) {
+            direction.x -= 1.0;
+        }
+        if action_state.pressed(&PlayerAction::Right) {
+            direction.x += 1.0;
+        }
+
+        if direction != Vec2::ZERO {
+            transform.translation += direction.normalize().extend(0.0) * 300.0 * time.delta_secs();
+        }
+    }
 }
 
 fn update_color(
@@ -51,7 +80,7 @@ fn main() {
         .add_plugins(InputManagerPlugin::<PlayerAction>::default())
         .add_plugins(StateMachinePlugin::default())
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, update_color)
+        .add_systems(Update, (update_color, player_movement))
         .run();
 }
 
@@ -69,7 +98,12 @@ fn setup_scene(mut commands: Commands) {
         StateMachine::default()
             .trans::<Inactive, _>(toggle_pressed, Active)
             .trans::<Active, _>(toggle_pressed, Inactive),
-        InputMap::default().with(PlayerAction::Toggle, KeyCode::Space),
+        InputMap::default()
+            .with(PlayerAction::Toggle, KeyCode::Space)
+            .with(PlayerAction::Up, KeyCode::KeyW)
+            .with(PlayerAction::Down, KeyCode::KeyS)
+            .with(PlayerAction::Left, KeyCode::KeyA)
+            .with(PlayerAction::Right, KeyCode::KeyD),
         ActionState::<PlayerAction>::default(),
     ));
 }
