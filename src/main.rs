@@ -1,6 +1,9 @@
+pub mod states;
+
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
+use states::{active::*, inactive::*};
 
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -15,56 +18,8 @@ pub enum PlayerAction {
     Right,
 }
 
-#[derive(Clone, Copy, Component, Reflect)]
-#[component(storage = "SparseSet")]
-pub struct Inactive;
-
-#[derive(Clone, Copy, Component, Reflect)]
-#[component(storage = "SparseSet")]
-pub struct Active;
-
 fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     query.get(entity).is_ok_and(|action_state| action_state.just_pressed(&PlayerAction::Toggle))
-}
-
-fn player_movement(
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &ActionState<PlayerAction>)>,
-) {
-    for (mut transform, action_state) in &mut query {
-        let mut direction = Vec2::ZERO;
-        if action_state.pressed(&PlayerAction::Up) {
-            direction.y += 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Down) {
-            direction.y -= 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Left) {
-            direction.x -= 1.0;
-        }
-        if action_state.pressed(&PlayerAction::Right) {
-            direction.x += 1.0;
-        }
-
-        if direction != Vec2::ZERO {
-            transform.translation += direction.normalize().extend(0.0) * 300.0 * time.delta_secs();
-        }
-    }
-}
-
-fn update_color(
-    mut query: Query<
-        (&mut Sprite, Has<Active>),
-        Or<(Added<Active>, Added<Inactive>)>,
-    >,
-) {
-    for (mut sprite, is_active) in &mut query {
-        if is_active {
-            sprite.color = Color::srgb(1.0, 0.0, 0.0);
-        } else {
-            sprite.color = Color::srgb(0.0, 1.0, 0.0);
-        }
-    }
 }
 
 fn main() {
@@ -79,8 +34,8 @@ fn main() {
         }))
         .add_plugins(InputManagerPlugin::<PlayerAction>::default())
         .add_plugins(StateMachinePlugin::default())
+        .add_plugins((InactivePlugin, ActivePlugin))
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, (update_color, player_movement))
         .run();
 }
 
