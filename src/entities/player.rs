@@ -7,7 +7,8 @@ use crate::input::PlayerAction;
 pub mod states;
 
 fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
-    query.get(entity).is_ok_and(|action_state| action_state.just_pressed(&PlayerAction::Toggle))
+    let Ok(action_state) = query.get(entity) else { return false; };
+    action_state.just_pressed(&PlayerAction::Toggle)
 }
 
 pub struct PlayerPlugin;
