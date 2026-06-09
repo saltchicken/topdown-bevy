@@ -22,7 +22,7 @@ pub fn detect_interactions(
                 interactor: e1,
                 interactable: e2,
             });
-        } 
+        }
         // Check if Entity 2 interacted with Entity 1
         else if interactor_query.contains(e2) && interactable_query.contains(e1) {
             ev_interaction.write(InteractionEvent {

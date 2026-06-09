@@ -4,24 +4,32 @@ use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 
 use super::components::{Player, Speed};
-use super::states::{idle::Idle, running::Running, walking::Walking};
 use super::config::PlayerConfig;
+use super::states::{idle::Idle, running::Running, walking::Walking};
 use crate::input::PlayerAction;
 
 use crate::entities::interactables::components::Interactor;
 
 pub fn is_walking(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
-    let Ok(action_state) = query.get(entity) else { return false; };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0 && !action_state.pressed(&PlayerAction::Run)
+    let Ok(action_state) = query.get(entity) else {
+        return false;
+    };
+    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
+        && !action_state.pressed(&PlayerAction::Run)
 }
 
 pub fn is_running(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
-    let Ok(action_state) = query.get(entity) else { return false; };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0 && action_state.pressed(&PlayerAction::Run)
+    let Ok(action_state) = query.get(entity) else {
+        return false;
+    };
+    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
+        && action_state.pressed(&PlayerAction::Run)
 }
 
 pub fn is_idle(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
-    let Ok(action_state) = query.get(entity) else { return false; };
+    let Ok(action_state) = query.get(entity) else {
+        return false;
+    };
     action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0
 }
 

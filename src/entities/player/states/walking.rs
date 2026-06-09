@@ -1,8 +1,8 @@
+use crate::entities::player::components::Speed;
+use crate::input::PlayerAction;
 use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use crate::input::PlayerAction;
-use crate::entities::player::components::Speed;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]

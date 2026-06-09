@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
+use super::config::PlayerConfig;
 use super::states::{idle::IdlePlugin, running::RunningPlugin, walking::WalkingPlugin};
 use super::systems;
-use super::config::PlayerConfig;
 
 pub struct PlayerPlugin;
 

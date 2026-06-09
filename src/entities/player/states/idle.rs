@@ -8,8 +8,7 @@ pub struct IdlePlugin;
 
 impl Plugin for IdlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_observer(on_enter)
-            .add_observer(on_exit);
+        app.add_observer(on_enter).add_observer(on_exit);
     }
 }
 

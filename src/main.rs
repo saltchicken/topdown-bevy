@@ -3,9 +3,9 @@ pub mod input;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use seldom_state::prelude::*;
-use entities::player::PlayerPlugin;
 use entities::interactables::InteractablesPlugin;
+use entities::player::PlayerPlugin;
+use seldom_state::prelude::*;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
