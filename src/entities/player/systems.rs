@@ -48,5 +48,6 @@ pub fn setup_player(mut commands: Commands, config: Res<PlayerConfig>) {
         LockedAxes::ROTATION_LOCKED,
         LinearVelocity::default(),
         LinearDamping(5.0),
+        CollisionEventsEnabled,
     ));
 }
