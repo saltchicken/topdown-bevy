@@ -1,6 +1,7 @@
 pub mod entities;
 pub mod input;
 
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use seldom_state::prelude::*;
 use entities::player::PlayerPlugin;
@@ -19,9 +20,11 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugins(PhysicsPlugins::default())
         .add_plugins(StateMachinePlugin::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
+        .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, setup_scene)
         .run();
 }

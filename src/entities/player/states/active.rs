@@ -1,7 +1,7 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use crate::input::PlayerAction;
-use crate::entities::player::Velocity;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -28,7 +28,7 @@ fn on_exit(_trigger: On<Remove, Active>) {
 }
 
 fn on_update(
-    mut query: Query<(&mut Velocity, &ActionState<PlayerAction>), With<Active>>,
+    mut query: Query<(&mut LinearVelocity, &ActionState<PlayerAction>), With<Active>>,
 ) {
     for (mut velocity, action_state) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);

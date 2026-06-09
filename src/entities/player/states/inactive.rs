@@ -1,5 +1,5 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
-use crate::entities::player::Velocity;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -21,7 +21,7 @@ fn on_enter(trigger: On<Add, Inactive>, mut query: Query<&mut Sprite>) {
     }
 }
 
-fn on_update(mut query: Query<&mut Velocity, With<Inactive>>) {
+fn on_update(mut query: Query<&mut LinearVelocity, With<Inactive>>) {
     for mut velocity in &mut query {
         velocity.0 = Vec2::ZERO;
     }
