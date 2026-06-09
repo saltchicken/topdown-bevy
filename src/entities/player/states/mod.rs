@@ -1,2 +1,2 @@
-pub mod active;
-pub mod inactive;
+pub mod idle;
+pub mod walking;

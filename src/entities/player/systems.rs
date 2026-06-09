@@ -4,12 +4,17 @@ use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 
 use super::components::{Player, Speed};
-use super::states::{active::Active, inactive::Inactive};
+use super::states::{idle::Idle, walking::Walking};
 use crate::input::PlayerAction;
 
-pub fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
+pub fn is_moving(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     let Ok(action_state) = query.get(entity) else { return false; };
-    action_state.just_pressed(&PlayerAction::Toggle)
+    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
+}
+
+pub fn is_idle(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
+    let Ok(action_state) = query.get(entity) else { return false; };
+    action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0
 }
 
 pub fn setup_player(mut commands: Commands) {
@@ -22,10 +27,10 @@ pub fn setup_player(mut commands: Commands) {
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, 0.0),
-        Inactive,
+        Idle,
         StateMachine::default()
-            .trans::<Inactive, _>(toggle_pressed, Active)
-            .trans::<Active, _>(toggle_pressed, Inactive),
+            .trans::<Idle, _>(is_moving, Walking)
+            .trans::<Walking, _>(is_idle, Idle),
         PlayerAction::default_input_map(),
         ActionState::<PlayerAction>::default(),
         RigidBody::Dynamic,
