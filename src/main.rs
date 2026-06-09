@@ -5,6 +5,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use seldom_state::prelude::*;
 use entities::player::PlayerPlugin;
+use entities::interactables::InteractablesPlugin;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
@@ -24,6 +25,7 @@ fn main() {
         .add_plugins(StateMachinePlugin::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
+        .add_plugins(InteractablesPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, setup_scene)
         .run();
