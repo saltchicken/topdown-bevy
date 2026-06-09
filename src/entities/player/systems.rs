@@ -32,5 +32,6 @@ pub fn setup_player(mut commands: Commands) {
         Collider::rectangle(40.0, 40.0),
         LockedAxes::ROTATION_LOCKED,
         LinearVelocity::default(),
+        LinearDamping(5.0),
     ));
 }
