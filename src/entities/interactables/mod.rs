@@ -1,4 +1,3 @@
-// src/entities/interactables/mod.rs
 pub mod coin;
 
 use bevy::prelude::*;
