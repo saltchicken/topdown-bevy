@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use crate::input::PlayerAction;
+use crate::entities::player::Velocity;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -27,13 +28,13 @@ fn on_exit(_trigger: On<Remove, Active>) {
 }
 
 fn on_update(
-    time: Res<Time>,
-    mut query: Query<(&mut Transform, &ActionState<PlayerAction>), With<Active>>,
+    mut query: Query<(&mut Velocity, &ActionState<PlayerAction>), With<Active>>,
 ) {
-    for (mut transform, action_state) in &mut query {
+    for (mut velocity, action_state) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);
 
-        let velocity = direction.normalize_or_zero() * 300.0 * time.delta_secs();
-        transform.translation += velocity.extend(0.0);
+        let speed = 300.0;
+
+        velocity.0 = direction.normalize_or_zero() * speed;
     }
 }
