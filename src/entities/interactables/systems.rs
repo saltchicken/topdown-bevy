@@ -16,19 +16,19 @@ pub fn detect_interactions(
         let e1 = collision.collider1;
         let e2 = collision.collider2;
 
-        // Check if Entity 1 interacted with Entity 2
-        if interactor_query.contains(e1) && interactable_query.contains(e2) {
-            ev_interaction.write(InteractionEvent {
-                interactor: e1,
-                interactable: e2,
-            });
-        }
-        // Check if Entity 2 interacted with Entity 1
-        else if interactor_query.contains(e2) && interactable_query.contains(e1) {
-            ev_interaction.write(InteractionEvent {
-                interactor: e2,
-                interactable: e1,
-            });
-        }
+        // Determine the correct assignment, or skip if neither condition matches
+        let (interactor, interactable) = 
+            if interactor_query.contains(e1) && interactable_query.contains(e2) {
+                (e1, e2)
+            } else if interactor_query.contains(e2) && interactable_query.contains(e1) {
+                (e2, e1)
+            } else {
+                continue; // Move on to the next collision event
+            };
+
+        ev_interaction.write(InteractionEvent {
+            interactor,
+            interactable,
+        });
     }
 }
