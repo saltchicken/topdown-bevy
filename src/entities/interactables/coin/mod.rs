@@ -1,6 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use super::{Interactable, InteractionEvent};
+use super::{components::Interactable, events::InteractionEvent};
 
 #[derive(Component, Default, Reflect)]
 pub struct Coin {
@@ -38,14 +38,14 @@ fn handle_coin_interactions(
     coin_query: Query<&Coin>,
 ) {
     for event in events.read() {
-        // If the entity that was interacted with is a Coin
-        if let Ok(coin) = coin_query.get(event.0) {
+        // Target event.interactable instead of event.0
+        if let Ok(coin) = coin_query.get(event.interactable) {
             info!("Collected a coin worth {}!", coin.value);
             
-            // Despawn the coin
-            commands.entity(event.0).despawn();
+            commands.entity(event.interactable).despawn();
             
-            // Future: You could emit a ScoreUpdateEvent(coin.value) here
+            // Because you have `event.interactor`, you could now theoretically emit
+            // a ScoreUpdateEvent { player: event.interactor, amount: coin.value }
         }
     }
 }

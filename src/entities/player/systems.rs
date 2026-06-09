@@ -8,6 +8,8 @@ use super::states::{idle::Idle, running::Running, walking::Walking};
 use super::config::PlayerConfig;
 use crate::input::PlayerAction;
 
+use crate::entities::interactables::components::Interactor;
+
 pub fn is_walking(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     let Ok(action_state) = query.get(entity) else { return false; };
     action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0 && !action_state.pressed(&PlayerAction::Run)
@@ -26,6 +28,7 @@ pub fn is_idle(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>)
 pub fn setup_player(mut commands: Commands, config: Res<PlayerConfig>) {
     commands.spawn((
         Player,
+        Interactor,
         Speed(config.base_speed),
         Sprite {
             color: Color::srgb(0.0, 1.0, 0.0),
