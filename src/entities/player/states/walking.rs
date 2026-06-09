@@ -33,6 +33,8 @@ fn on_update(
 ) {
     for (mut velocity, action_state, speed) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);
-        velocity.0 = direction.normalize_or_zero() * speed.0;
+        if direction.length_squared() > 0.0 {
+            velocity.0 = direction.normalize() * speed.0;
+        }
     }
 }
