@@ -5,12 +5,14 @@ use leafwing_input_manager::prelude::*;
 pub enum PlayerAction {
     #[actionlike(DualAxis)]
     Move,
+    Run,
 }
 
 impl PlayerAction {
     pub fn default_input_map() -> InputMap<Self> {
         InputMap::default()
             .with_dual_axis(Self::Move, VirtualDPad::wasd())
+            .with(Self::Run, KeyCode::ShiftLeft)
     }
 }
 
