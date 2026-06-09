@@ -2,27 +2,19 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
-use self::states::{active::*, inactive::*};
+
+use super::components::Player;
+use super::states::{active::Active, inactive::Inactive};
 use crate::input::PlayerAction;
 
-pub mod states;
-
-fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
+pub fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
     let Ok(action_state) = query.get(entity) else { return false; };
     action_state.just_pressed(&PlayerAction::Toggle)
 }
 
-pub struct PlayerPlugin;
-
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins((ActivePlugin, InactivePlugin))
-            .add_systems(Startup, setup_player);
-    }
-}
-
-fn setup_player(mut commands: Commands) {
+pub fn setup_player(mut commands: Commands) {
     commands.spawn((
+        Player, // <-- Our new marker component
         Sprite {
             color: Color::srgb(0.0, 1.0, 0.0),
             custom_size: Some(Vec2::splat(40.0)),
