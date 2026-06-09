@@ -2,7 +2,7 @@ use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use crate::input::PlayerAction;
-use super::super::components::Speed;
+use crate::entities::player::components::Speed;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -14,7 +14,7 @@ impl Plugin for ActivePlugin {
     fn build(&self, app: &mut App) {
         app.add_observer(on_enter)
             .add_observer(on_exit)
-            .add_systems(Update, on_update);
+            .add_systems(FixedUpdate, on_update);
     }
 }
 

@@ -11,7 +11,7 @@ impl Plugin for InactivePlugin {
     fn build(&self, app: &mut App) {
         app.add_observer(on_enter)
             .add_observer(on_exit)
-            .add_systems(Update, on_update);
+            .add_systems(FixedUpdate, on_update);
     }
 }
 
