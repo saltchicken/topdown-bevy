@@ -5,6 +5,7 @@ use seldom_state::prelude::*;
 
 use super::components::{Player, Speed};
 use super::states::{idle::Idle, running::Running, walking::Walking};
+use super::config::PlayerConfig;
 use crate::input::PlayerAction;
 
 pub fn is_walking(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>) -> bool {
@@ -22,13 +23,13 @@ pub fn is_idle(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>)
     action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0
 }
 
-pub fn setup_player(mut commands: Commands) {
+pub fn setup_player(mut commands: Commands, config: Res<PlayerConfig>) {
     commands.spawn((
         Player,
-        Speed(300.0),
+        Speed(config.base_speed),
         Sprite {
             color: Color::srgb(0.0, 1.0, 0.0),
-            custom_size: Some(Vec2::splat(40.0)),
+            custom_size: Some(Vec2::splat(config.size)),
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, 0.0),
@@ -43,7 +44,7 @@ pub fn setup_player(mut commands: Commands) {
         PlayerAction::default_input_map(),
         ActionState::<PlayerAction>::default(),
         RigidBody::Dynamic,
-        Collider::rectangle(40.0, 40.0),
+        Collider::rectangle(config.size, config.size),
         LockedAxes::ROTATION_LOCKED,
         LinearVelocity::default(),
         LinearDamping(5.0),
