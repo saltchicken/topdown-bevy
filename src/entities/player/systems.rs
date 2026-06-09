@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 
-use super::components::Player;
+use super::components::{Player, Speed};
 use super::states::{active::Active, inactive::Inactive};
 use crate::input::PlayerAction;
 
@@ -14,7 +14,8 @@ pub fn toggle_pressed(In(entity): In<Entity>, query: Query<&ActionState<PlayerAc
 
 pub fn setup_player(mut commands: Commands) {
     commands.spawn((
-        Player, // <-- Our new marker component
+        Player,
+        Speed(300.0),
         Sprite {
             color: Color::srgb(0.0, 1.0, 0.0),
             custom_size: Some(Vec2::splat(40.0)),

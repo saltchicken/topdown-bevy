@@ -2,6 +2,7 @@ use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use crate::input::PlayerAction;
+use super::super::components::Speed;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -28,13 +29,10 @@ fn on_exit(_trigger: On<Remove, Active>) {
 }
 
 fn on_update(
-    mut query: Query<(&mut LinearVelocity, &ActionState<PlayerAction>), With<Active>>,
+    mut query: Query<(&mut LinearVelocity, &ActionState<PlayerAction>, &Speed), With<Active>>,
 ) {
-    for (mut velocity, action_state) in &mut query {
+    for (mut velocity, action_state, speed) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);
-
-        let speed = 300.0;
-
-        velocity.0 = direction.normalize_or_zero() * speed;
+        velocity.0 = direction.normalize_or_zero() * speed.0;
     }
 }
