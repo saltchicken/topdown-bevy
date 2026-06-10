@@ -1,5 +1,4 @@
 use super::{components::Interactable, events::InteractionEvent};
-use crate::events::SpawnRequest;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
@@ -8,37 +7,38 @@ pub struct Coin {
     pub value: u32,
 }
 
-#[derive(Clone)]
-pub struct CoinPayload {
-    pub value: u32,
+#[derive(Bundle)]
+pub struct CoinBundle {
+    pub coin: Coin,
+    pub interactable: Interactable,
+    pub sprite: Sprite,
+    pub transform: Transform,
+    pub collider: Collider,
+    pub sensor: Sensor,
+}
+
+impl CoinBundle {
+    pub fn new(value: u32, position: Vec2) -> Self {
+        Self {
+            coin: Coin { value },
+            interactable: Interactable,
+            sprite: Sprite {
+                color: Color::srgb(1.0, 1.0, 0.0),
+                custom_size: Some(Vec2::splat(20.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(position.x, position.y, 0.0),
+            collider: Collider::circle(10.0),
+            sensor: Sensor,
+        }
+    }
 }
 
 pub struct CoinPlugin;
 
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<SpawnRequest<CoinPayload>>()
-           .add_systems(Update, (spawn_coins_from_requests, handle_coin_interactions));
-    }
-}
-
-fn spawn_coins_from_requests(
-    mut commands: Commands,
-    mut requests: MessageReader<SpawnRequest<CoinPayload>>, 
-) {
-    for request in requests.read() {
-        commands.spawn((
-            Coin { value: request.payload.value },
-            Interactable,
-            Sprite {
-                color: Color::srgb(1.0, 1.0, 0.0),
-                custom_size: Some(Vec2::splat(20.0)),
-                ..default()
-            },
-            Transform::from_xyz(request.position.x, request.position.y, 0.0),
-            Collider::circle(10.0),
-            Sensor,
-        ));
+        app.add_systems(Update, handle_coin_interactions);
     }
 }
 

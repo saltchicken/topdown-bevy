@@ -1,5 +1,4 @@
 pub mod entities;
-pub mod events;
 pub mod input;
 
 use avian2d::prelude::*;
@@ -8,8 +7,7 @@ use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
 use seldom_state::prelude::*;
 
-use crate::events::SpawnRequest;
-use crate::entities::interactables::coin::CoinPayload;
+use crate::entities::interactables::coin::CoinBundle;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
@@ -39,18 +37,10 @@ fn setup_scene(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
 
-fn generate_level(
-    mut spawn_coins: MessageWriter<SpawnRequest<CoinPayload>>,
-) {
+fn generate_level(mut commands: Commands) {
     // Spawn a high-value coin
-    spawn_coins.write(SpawnRequest {
-        position: Vec2::new(150.0, 100.0),
-        payload: CoinPayload { value: 5 },
-    });
+    commands.spawn(CoinBundle::new(5, Vec2::new(150.0, 100.0)));
 
     // Spawn a regular coin
-    spawn_coins.write(SpawnRequest {
-        position: Vec2::new(-50.0, 20.0),
-        payload: CoinPayload { value: 1 },
-    });
+    commands.spawn(CoinBundle::new(1, Vec2::new(-50.0, 20.0)));
 }
