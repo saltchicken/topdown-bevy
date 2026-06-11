@@ -7,10 +7,10 @@ use super::{
 };
 
 pub fn detect_interactions(
+    mut commands: Commands,
     mut collision_events: MessageReader<CollisionStart>,
     interactor_query: Query<Entity, With<Interactor>>,
     interactable_query: Query<Entity, With<Interactable>>,
-    mut ev_interaction: MessageWriter<InteractionEvent>,
 ) {
     for collision in collision_events.read() {
         let e1 = collision.collider1;
@@ -26,9 +26,6 @@ pub fn detect_interactions(
                 continue; // Move on to the next collision event
             };
 
-        ev_interaction.write(InteractionEvent {
-            interactor,
-            interactable,
-        });
+        commands.entity(interactable).trigger(|entity| InteractionEvent { entity, interactor });
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-#[derive(Message)]
+#[derive(EntityEvent)]
 pub struct InteractionEvent {
+    pub entity: Entity,
     pub interactor: Entity,
-    pub interactable: Entity,
 }

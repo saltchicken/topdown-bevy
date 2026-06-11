@@ -38,19 +38,18 @@ pub struct CoinPlugin;
 
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, handle_coin_interactions);
+        app.add_observer(handle_coin_interactions);
     }
 }
 
 fn handle_coin_interactions(
+    trigger: On<InteractionEvent>,
     mut commands: Commands,
-    mut events: MessageReader<InteractionEvent>,
     coin_query: Query<&Coin>,
 ) {
-    for event in events.read() {
-        if let Ok(coin) = coin_query.get(event.interactable) {
-            info!("Collected a coin worth {}!", coin.value);
-            commands.entity(event.interactable).despawn();
-        }
+    let interactable = trigger.entity;
+    if let Ok(coin) = coin_query.get(interactable) {
+        info!("Collected a coin worth {}!", coin.value);
+        commands.entity(interactable).despawn();
     }
 }
