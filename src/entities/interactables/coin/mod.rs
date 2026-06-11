@@ -1,6 +1,9 @@
+pub mod config;
+
 use super::{components::Interactable, events::InteractionEvent};
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use config::CoinConfig;
 
 #[derive(Component, Default, Reflect)]
 pub struct Coin {
@@ -18,17 +21,17 @@ pub struct CoinBundle {
 }
 
 impl CoinBundle {
-    pub fn new(value: u32, position: Vec2) -> Self {
+    pub fn new(value: u32, position: Vec2, config: &CoinConfig) -> Self {
         Self {
             coin: Coin { value },
             interactable: Interactable,
             sprite: Sprite {
-                color: Color::srgb(1.0, 1.0, 0.0),
-                custom_size: Some(Vec2::splat(20.0)),
+                color: config.color,
+                custom_size: Some(Vec2::splat(config.size)),
                 ..default()
             },
             transform: Transform::from_xyz(position.x, position.y, 0.0),
-            collider: Collider::circle(10.0),
+            collider: Collider::circle(config.collider_radius),
             sensor: Sensor,
         }
     }
@@ -38,7 +41,8 @@ pub struct CoinPlugin;
 
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
-        app.add_observer(handle_coin_interactions);
+        app.init_resource::<CoinConfig>()
+            .add_observer(handle_coin_interactions);
     }
 }
 
