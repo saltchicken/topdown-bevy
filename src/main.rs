@@ -1,5 +1,6 @@
 pub mod entities;
 pub mod input;
+pub mod physics;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;

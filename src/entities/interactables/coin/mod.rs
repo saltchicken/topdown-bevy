@@ -4,6 +4,7 @@ use super::{components::Interactable, events::InteractionEvent};
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use config::CoinConfig;
+use crate::physics::GameLayer;
 
 #[derive(Component, Default, Reflect)]
 pub struct Coin {
@@ -18,6 +19,7 @@ pub struct CoinBundle {
     pub transform: Transform,
     pub collider: Collider,
     pub sensor: Sensor,
+    pub collision_layers: CollisionLayers,
 }
 
 impl CoinBundle {
@@ -33,6 +35,7 @@ impl CoinBundle {
             transform: Transform::from_xyz(position.x, position.y, 0.0),
             collider: Collider::circle(config.collider_radius),
             sensor: Sensor,
+            collision_layers: CollisionLayers::new([GameLayer::Interactable], [GameLayer::Player]),
         }
     }
 }
