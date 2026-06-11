@@ -11,7 +11,7 @@ pub struct Running;
 
 pub fn on_enter(trigger: On<Add, Running>, mut query: Query<&mut Sprite>) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
-        sprite.color = Color::srgb(0.0, 0.0, 1.0);
+        sprite.color = Color::srgb(1.0, 0.0, 0.0);
     }
 }
 
@@ -21,7 +21,7 @@ pub fn on_update(
     for (mut velocity, action_state, speed) in &mut query {
         let direction = action_state.axis_pair(&PlayerAction::Move);
         if direction.length_squared() > 0.0 {
-            velocity.0 = direction.normalize() * (speed.0 * 2.0);
+            velocity.0 = direction.normalize() * speed.0;
         }
     }
 }
@@ -31,5 +31,5 @@ pub fn is_running(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
         return false;
     };
     action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
-        && action_state.pressed(&PlayerAction::Run)
+        && !action_state.just_pressed(&PlayerAction::Dash)
 }

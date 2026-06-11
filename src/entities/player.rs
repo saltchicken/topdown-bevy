@@ -10,8 +10,8 @@ use crate::input::PlayerAction;
 use crate::physics::GameLayer;
 
 use self::states::idle::*;
+use self::states::dashing::*;
 use self::states::running::*;
-use self::states::walking::*;
 use self::states::PlayerStatePlugin;
 
 #[derive(Component, Default, Reflect)]
@@ -69,12 +69,12 @@ impl PlayerBundle {
             transform: Transform::from_xyz(position.x, position.y, 0.0),
             idle: Idle,
             state_machine: StateMachine::default()
-                .trans::<Idle, _>(is_walking, Walking)
                 .trans::<Idle, _>(is_running, Running)
-                .trans::<Walking, _>(is_idle, Idle)
-                .trans::<Walking, _>(is_running, Running)
+                .trans::<Idle, _>(is_dashing, Dashing)
                 .trans::<Running, _>(is_idle, Idle)
-                .trans::<Running, _>(is_walking, Walking),
+                .trans::<Running, _>(is_dashing, Dashing)
+                .trans::<Dashing, _>(done_dashing_and_idle, Idle)
+                .trans::<Dashing, _>(done_dashing_and_running, Running),
             input_map: PlayerAction::default_input_map(),
             action_state: ActionState::<PlayerAction>::default(),
             rigid_body: RigidBody::Dynamic,
