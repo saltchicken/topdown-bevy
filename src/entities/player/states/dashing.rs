@@ -77,4 +77,20 @@ pub fn done_dashing_and_running(
         return false;
     };
     action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
+        && !action_state.pressed(&PlayerAction::Walk)
+}
+
+pub fn done_dashing_and_walking(
+    In(entity): In<Entity>,
+    dash_query: Query<&DashTimer>,
+    action_query: Query<&ActionState<PlayerAction>>,
+) -> bool {
+    if dash_query.contains(entity) {
+        return false;
+    }
+    let Ok(action_state) = action_query.get(entity) else {
+        return false;
+    };
+    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
+        && action_state.pressed(&PlayerAction::Walk)
 }
