@@ -1,10 +1,28 @@
+pub mod coin;
+
 use avian2d::prelude::CollisionStart;
 use bevy::prelude::*;
 
-use super::{
-    components::{Interactable, Interactor},
-    events::InteractionEvent,
-};
+#[derive(Component, Reflect, Default)]
+pub struct Interactable;
+
+#[derive(Component, Reflect, Default)]
+pub struct Interactor;
+
+#[derive(EntityEvent)]
+pub struct InteractionEvent {
+    pub entity: Entity,
+    pub interactor: Entity,
+}
+
+pub struct InteractablesPlugin;
+
+impl Plugin for InteractablesPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, detect_interactions)
+            .add_plugins(coin::CoinPlugin);
+    }
+}
 
 pub fn detect_interactions(
     mut commands: Commands,
@@ -16,14 +34,13 @@ pub fn detect_interactions(
         let e1 = collision.collider1;
         let e2 = collision.collider2;
 
-        // Determine the correct assignment, or skip if neither condition matches
         let (interactor, interactable) = 
             if interactor_query.contains(e1) && interactable_query.contains(e2) {
                 (e1, e2)
             } else if interactor_query.contains(e2) && interactable_query.contains(e1) {
                 (e2, e1)
             } else {
-                continue; // Move on to the next collision event
+                continue;
             };
 
         commands.entity(interactable).trigger(|entity| InteractionEvent { entity, interactor });

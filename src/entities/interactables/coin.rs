@@ -1,10 +1,26 @@
-pub mod config;
-
-use super::{components::Interactable, events::InteractionEvent};
+use super::{Interactable, InteractionEvent};
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use config::CoinConfig;
 use crate::physics::GameLayer;
+
+#[derive(Resource)]
+pub struct CoinConfig {
+    pub default_value: u32,
+    pub size: f32,
+    pub collider_radius: f32,
+    pub color: Color,
+}
+
+impl Default for CoinConfig {
+    fn default() -> Self {
+        Self {
+            default_value: 1,
+            size: 20.0,
+            collider_radius: 10.0,
+            color: Color::srgb(1.0, 1.0, 0.0),
+        }
+    }
+}
 
 #[derive(Component, Default, Reflect)]
 pub struct Coin {

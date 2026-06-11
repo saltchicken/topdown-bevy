@@ -8,7 +8,7 @@ use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
 use seldom_state::prelude::*;
 
-use crate::entities::interactables::coin::{config::CoinConfig, CoinBundle};
+use crate::entities::interactables::coin::{CoinConfig, CoinBundle};
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
