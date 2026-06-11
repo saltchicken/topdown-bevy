@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+use crate::entities::player::PlayerConfig;
 use crate::input::PlayerAction;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
 pub struct Idle;
 
-pub fn on_enter(trigger: On<Add, Idle>, mut query: Query<&mut Sprite>) {
+pub fn on_enter(trigger: On<Add, Idle>, mut query: Query<&mut Sprite>, config: Res<PlayerConfig>) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
-        sprite.color = Color::srgb(0.0, 1.0, 0.0);
+        sprite.color = config.color_idle;
     }
 }
 

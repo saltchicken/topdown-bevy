@@ -25,6 +25,13 @@ pub struct Speed(pub f32);
 pub struct PlayerConfig {
     pub size: f32,
     pub base_speed: f32,
+    pub color_idle: Color,
+    pub color_running: Color,
+    pub color_walking: Color,
+    pub color_dashing: Color,
+    pub walk_speed_multiplier: f32,
+    pub dash_speed_multiplier: f32,
+    pub dash_duration: f32,
 }
 
 impl Default for PlayerConfig {
@@ -32,6 +39,13 @@ impl Default for PlayerConfig {
         Self {
             size: 40.0,
             base_speed: 300.0,
+            color_idle: Color::srgb(0.0, 1.0, 0.0),
+            color_running: Color::srgb(1.0, 0.0, 0.0),
+            color_walking: Color::srgb(0.0, 1.0, 1.0),
+            color_dashing: Color::srgb(0.0, 0.0, 1.0),
+            walk_speed_multiplier: 0.5,
+            dash_speed_multiplier: 5.0,
+            dash_duration: 0.2,
         }
     }
 }
@@ -63,7 +77,7 @@ impl PlayerBundle {
             interactor: Interactor,
             speed: Speed(config.base_speed),
             sprite: Sprite {
-                color: Color::srgb(0.0, 1.0, 0.0),
+                color: config.color_idle,
                 custom_size: Some(Vec2::splat(config.size)),
                 ..default()
             },

@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-use crate::entities::player::Speed;
+use crate::entities::player::{PlayerConfig, Speed};
 use crate::input::PlayerAction;
 
 #[derive(Clone, Copy, Component, Reflect)]
@@ -16,17 +16,18 @@ pub fn on_enter(
     trigger: On<Add, Dashing>,
     mut commands: Commands,
     mut query: Query<(&mut Sprite, &mut LinearVelocity, &ActionState<PlayerAction>, &Speed)>,
+    config: Res<PlayerConfig>,
 ) {
     if let Ok((mut sprite, mut velocity, action_state, speed)) = query.get_mut(trigger.entity) {
-        sprite.color = Color::srgb(0.0, 0.0, 1.0);
+        sprite.color = config.color_dashing;
         let direction = action_state.axis_pair(&PlayerAction::Move);
         if direction.length_squared() > 0.0 {
             // Apply a quick burst of speed initially
-            velocity.0 = direction.normalize() * (speed.0 * 5.0);
+            velocity.0 = direction.normalize() * (speed.0 * config.dash_speed_multiplier);
         }
         commands
             .entity(trigger.entity)
-            .insert(DashTimer(Timer::from_seconds(0.2, TimerMode::Once)));
+            .insert(DashTimer(Timer::from_seconds(config.dash_duration, TimerMode::Once)));
     }
 }
 
