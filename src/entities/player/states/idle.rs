@@ -7,7 +7,7 @@ use crate::input::PlayerAction;
 #[component(storage = "SparseSet")]
 pub struct Idle;
 
-pub fn on_idle_enter(trigger: On<Add, Idle>, mut query: Query<&mut Sprite>) {
+pub fn on_enter(trigger: On<Add, Idle>, mut query: Query<&mut Sprite>) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
         sprite.color = Color::srgb(0.0, 1.0, 0.0);
     }

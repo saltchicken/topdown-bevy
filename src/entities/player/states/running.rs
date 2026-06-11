@@ -9,13 +9,13 @@ use crate::input::PlayerAction;
 #[component(storage = "SparseSet")]
 pub struct Running;
 
-pub fn on_running_enter(trigger: On<Add, Running>, mut query: Query<&mut Sprite>) {
+pub fn on_enter(trigger: On<Add, Running>, mut query: Query<&mut Sprite>) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
         sprite.color = Color::srgb(0.0, 0.0, 1.0);
     }
 }
 
-pub fn on_running_update(
+pub fn on_update(
     mut query: Query<(&mut LinearVelocity, &ActionState<PlayerAction>, &Speed), With<Running>>,
 ) {
     for (mut velocity, action_state, speed) in &mut query {
