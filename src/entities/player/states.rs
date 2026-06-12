@@ -1,5 +1,5 @@
-pub mod idle;
 pub mod dashing;
+pub mod idle;
 pub mod running;
 pub mod walking;
 

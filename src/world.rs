@@ -1,15 +1,12 @@
-use avian2d::prelude::*;
-use bevy::prelude::*;
-use bevy_ecs_tiled::prelude::*;
 use crate::entities::enemy::{EnemyBundle, EnemyConfig};
 use crate::entities::interactables::coin::{CoinBundle, CoinConfig};
 use crate::entities::player::{PlayerBundle, PlayerConfig};
 use crate::physics::GameLayer;
+use avian2d::prelude::*;
+use bevy::prelude::*;
+use bevy_ecs_tiled::prelude::*;
 
-pub fn generate_level(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn generate_level(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(TiledMap(asset_server.load("tilemap.tmx")));
 }
 
@@ -22,10 +19,10 @@ pub fn spawn_tiled_entities(
     enemy_config: Res<EnemyConfig>,
 ) {
     let entity = trigger.entity;
-    
+
     // We fetch the TiledName associated with the entity that just received a TiledObject component
     if let Ok(tiled_name) = query.get(entity) {
-        match tiled_name.0.as_str() { 
+        match tiled_name.0.as_str() {
             "Player" => {
                 commands
                     .entity(entity)
@@ -42,24 +39,18 @@ pub fn spawn_tiled_entities(
                     .insert(CoinBundle::new(1, &coin_config));
             }
             // Ignore objects that don't have a recognized class
-            _ => {} 
+            _ => {}
         }
     }
 }
 
-pub fn on_collider_created(
-    trigger: On<TiledEvent<ColliderCreated>>,
-    mut commands: Commands,
-) {
+pub fn on_collider_created(trigger: On<TiledEvent<ColliderCreated>>, mut commands: Commands) {
     let event = trigger.event();
-    
+
     if matches!(event.event.source, TiledColliderSource::TilesLayer) {
         commands.entity(event.origin).insert((
             RigidBody::Static,
-            CollisionLayers::new(
-                [GameLayer::Default],
-                [GameLayer::Player, GameLayer::Enemy],
-            ),
+            CollisionLayers::new([GameLayer::Default], [GameLayer::Player, GameLayer::Enemy]),
         ));
     }
 }

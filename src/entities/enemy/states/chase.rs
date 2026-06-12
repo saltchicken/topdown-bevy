@@ -1,7 +1,7 @@
-use avian2d::prelude::*;
-use bevy::prelude::*;
 use crate::entities::enemy::EnemyConfig;
 use crate::entities::player::Player;
+use avian2d::prelude::*;
+use bevy::prelude::*;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]
@@ -18,9 +18,13 @@ pub fn on_update(
     player_query: Query<&Transform, With<Player>>,
     config: Res<EnemyConfig>,
 ) {
-    let Ok(player_transform) = player_query.single() else { return; };
+    let Ok(player_transform) = player_query.single() else {
+        return;
+    };
     for (mut velocity, enemy_transform) in &mut enemy_query {
-        let direction = (player_transform.translation.truncate() - enemy_transform.translation.truncate()).normalize_or_zero();
+        let direction = (player_transform.translation.truncate()
+            - enemy_transform.translation.truncate())
+        .normalize_or_zero();
         velocity.0 = direction * config.chase_speed;
     }
 }

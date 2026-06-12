@@ -9,7 +9,11 @@ use crate::input::PlayerAction;
 #[component(storage = "SparseSet")]
 pub struct Running;
 
-pub fn on_enter(trigger: On<Add, Running>, mut query: Query<&mut Sprite>, config: Res<PlayerConfig>) {
+pub fn on_enter(
+    trigger: On<Add, Running>,
+    mut query: Query<&mut Sprite>,
+    config: Res<PlayerConfig>,
+) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
         sprite.color = config.color_running;
     }
@@ -30,5 +34,6 @@ pub fn is_running(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Running
+    crate::input::MovementIntention::evaluate(action_state)
+        == crate::input::MovementIntention::Running
 }

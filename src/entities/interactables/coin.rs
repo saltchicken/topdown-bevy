@@ -1,7 +1,7 @@
 use super::{Interactable, InteractionEvent};
+use crate::physics::GameLayer;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::physics::GameLayer;
 
 #[derive(Resource)]
 pub struct CoinConfig {

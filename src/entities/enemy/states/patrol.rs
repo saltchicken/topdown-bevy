@@ -1,6 +1,6 @@
+use crate::entities::enemy::{EnemyConfig, MoveDirection, PatrolTimer};
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use crate::entities::enemy::{EnemyConfig, MoveDirection, PatrolTimer};
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]

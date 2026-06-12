@@ -7,10 +7,10 @@ use seldom_state::prelude::*;
 use crate::entities::player::Player;
 use crate::physics::GameLayer;
 
+use self::states::EnemyStatePlugin;
 use self::states::chase::*;
 use self::states::idle::*;
 use self::states::patrol::*;
-use self::states::EnemyStatePlugin;
 
 #[derive(Component, Default, Reflect)]
 pub struct Enemy;
@@ -55,9 +55,16 @@ pub fn player_in_aggro_range(
     player_query: Query<&Transform, With<Player>>,
     config: Res<EnemyConfig>,
 ) -> bool {
-    let Ok(enemy_transform) = enemy_query.get(entity) else { return false; };
-    let Ok(player_transform) = player_query.single() else { return false; };
-    enemy_transform.translation.distance(player_transform.translation) <= config.aggro_radius
+    let Ok(enemy_transform) = enemy_query.get(entity) else {
+        return false;
+    };
+    let Ok(player_transform) = player_query.single() else {
+        return false;
+    };
+    enemy_transform
+        .translation
+        .distance(player_transform.translation)
+        <= config.aggro_radius
 }
 
 pub fn player_out_of_aggro_range(
@@ -66,13 +73,23 @@ pub fn player_out_of_aggro_range(
     player_query: Query<&Transform, With<Player>>,
     config: Res<EnemyConfig>,
 ) -> bool {
-    let Ok(enemy_transform) = enemy_query.get(entity) else { return false; };
-    let Ok(player_transform) = player_query.single() else { return false; };
-    enemy_transform.translation.distance(player_transform.translation) > config.aggro_radius
+    let Ok(enemy_transform) = enemy_query.get(entity) else {
+        return false;
+    };
+    let Ok(player_transform) = player_query.single() else {
+        return false;
+    };
+    enemy_transform
+        .translation
+        .distance(player_transform.translation)
+        > config.aggro_radius
 }
 
 pub fn idle_timer_finished(In(entity): In<Entity>, query: Query<&IdleTimer>) -> bool {
-    query.get(entity).map(|t| t.0.is_finished()).unwrap_or(false)
+    query
+        .get(entity)
+        .map(|t| t.0.is_finished())
+        .unwrap_or(false)
 }
 
 #[derive(Bundle)]
@@ -116,7 +133,12 @@ impl EnemyBundle {
             collision_events: CollisionEventsEnabled,
             collision_layers: CollisionLayers::new(
                 [GameLayer::Enemy],
-                [GameLayer::Default, GameLayer::Player, GameLayer::Interactable, GameLayer::Enemy],
+                [
+                    GameLayer::Default,
+                    GameLayer::Player,
+                    GameLayer::Interactable,
+                    GameLayer::Enemy,
+                ],
             ),
             idle_timer: IdleTimer(Timer::from_seconds(2.0, TimerMode::Once)),
             patrol_timer: PatrolTimer(Timer::from_seconds(3.0, TimerMode::Repeating)),

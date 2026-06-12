@@ -38,7 +38,7 @@ fn main() {
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
         // Replaced the Update system with an observer
-        .add_observer(world::spawn_tiled_entities) 
+        .add_observer(world::spawn_tiled_entities)
         .add_observer(world::on_collider_created)
         .run();
 }

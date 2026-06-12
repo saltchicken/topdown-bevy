@@ -15,7 +15,12 @@ pub struct DashTimer(pub Timer);
 pub fn on_enter(
     trigger: On<Add, Dashing>,
     mut commands: Commands,
-    mut query: Query<(&mut Sprite, &mut LinearVelocity, &ActionState<PlayerAction>, &Speed)>,
+    mut query: Query<(
+        &mut Sprite,
+        &mut LinearVelocity,
+        &ActionState<PlayerAction>,
+        &Speed,
+    )>,
     config: Res<PlayerConfig>,
 ) {
     if let Ok((mut sprite, mut velocity, action_state, speed)) = query.get_mut(trigger.entity) {
@@ -27,7 +32,10 @@ pub fn on_enter(
         }
         commands
             .entity(trigger.entity)
-            .insert(DashTimer(Timer::from_seconds(config.dash_duration, TimerMode::Once)));
+            .insert(DashTimer(Timer::from_seconds(
+                config.dash_duration,
+                TimerMode::Once,
+            )));
     }
 }
 
@@ -48,7 +56,8 @@ pub fn is_dashing(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Dashing
+    crate::input::MovementIntention::evaluate(action_state)
+        == crate::input::MovementIntention::Dashing
 }
 
 pub fn dash_timer_finished(In(entity): In<Entity>, query: Query<&DashTimer>) -> bool {

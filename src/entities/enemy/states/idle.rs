@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::entities::enemy::{EnemyConfig, IdleTimer};
+use bevy::prelude::*;
 
 #[derive(Clone, Copy, Component, Reflect)]
 #[component(storage = "SparseSet")]

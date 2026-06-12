@@ -9,11 +9,11 @@ use crate::entities::interactables::Interactor;
 use crate::input::PlayerAction;
 use crate::physics::GameLayer;
 
-use self::states::idle::*;
+use self::states::PlayerStatePlugin;
 use self::states::dashing::*;
+use self::states::idle::*;
 use self::states::running::*;
 use self::states::walking::*;
-use self::states::PlayerStatePlugin;
 
 #[derive(Component, Default, Reflect)]
 pub struct Player;
@@ -102,7 +102,10 @@ impl PlayerBundle {
             linear_velocity: LinearVelocity::default(),
             linear_damping: LinearDamping(5.0),
             collision_events: CollisionEventsEnabled,
-            collision_layers: CollisionLayers::new([GameLayer::Player], [GameLayer::Default, GameLayer::Interactable]),
+            collision_layers: CollisionLayers::new(
+                [GameLayer::Player],
+                [GameLayer::Default, GameLayer::Interactable],
+            ),
         }
     }
 }
@@ -121,8 +124,12 @@ pub fn camera_follow_player(
     mut camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    let Ok(player_transform) = player_query.single() else { return; };
-    let Ok(mut camera_transform) = camera_query.single_mut() else { return; };
+    let Ok(player_transform) = player_query.single() else {
+        return;
+    };
+    let Ok(mut camera_transform) = camera_query.single_mut() else {
+        return;
+    };
 
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;

@@ -9,7 +9,11 @@ use crate::input::PlayerAction;
 #[component(storage = "SparseSet")]
 pub struct Walking;
 
-pub fn on_enter(trigger: On<Add, Walking>, mut query: Query<&mut Sprite>, config: Res<PlayerConfig>) {
+pub fn on_enter(
+    trigger: On<Add, Walking>,
+    mut query: Query<&mut Sprite>,
+    config: Res<PlayerConfig>,
+) {
     if let Ok(mut sprite) = query.get_mut(trigger.entity) {
         sprite.color = config.color_walking;
     }
@@ -31,5 +35,6 @@ pub fn is_walking(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Walking
+    crate::input::MovementIntention::evaluate(action_state)
+        == crate::input::MovementIntention::Walking
 }

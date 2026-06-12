@@ -34,7 +34,7 @@ pub fn detect_interactions(
         let e1 = collision.collider1;
         let e2 = collision.collider2;
 
-        let (interactor, interactable) = 
+        let (interactor, interactable) =
             if interactor_query.contains(e1) && interactable_query.contains(e2) {
                 (e1, e2)
             } else if interactor_query.contains(e2) && interactable_query.contains(e1) {
@@ -43,6 +43,8 @@ pub fn detect_interactions(
                 continue;
             };
 
-        commands.entity(interactable).trigger(|entity| InteractionEvent { entity, interactor });
+        commands
+            .entity(interactable)
+            .trigger(|entity| InteractionEvent { entity, interactor });
     }
 }
