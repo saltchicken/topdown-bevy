@@ -9,6 +9,28 @@ pub enum PlayerAction {
     Walk,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum MovementIntention {
+    Idle,
+    Walking,
+    Running,
+    Dashing,
+}
+
+impl MovementIntention {
+    pub fn evaluate(action_state: &ActionState<PlayerAction>) -> Self {
+        if action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0 {
+            Self::Idle
+        } else if action_state.just_pressed(&PlayerAction::Dash) {
+            Self::Dashing
+        } else if action_state.pressed(&PlayerAction::Walk) {
+            Self::Walking
+        } else {
+            Self::Running
+        }
+    }
+}
+
 impl PlayerAction {
     pub fn default_input_map() -> InputMap<Self> {
         InputMap::default()

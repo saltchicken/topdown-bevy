@@ -30,7 +30,5 @@ pub fn is_running(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
-        && !action_state.just_pressed(&PlayerAction::Dash)
-        && !action_state.pressed(&PlayerAction::Walk)
+    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Running
 }

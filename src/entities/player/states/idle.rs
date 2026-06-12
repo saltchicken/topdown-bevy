@@ -18,5 +18,5 @@ pub fn is_idle(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction>>)
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0
+    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Idle
 }

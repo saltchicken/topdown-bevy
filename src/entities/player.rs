@@ -93,9 +93,9 @@ impl PlayerBundle {
                 .trans::<Walking, _>(is_idle, Idle)
                 .trans::<Walking, _>(is_running, Running)
                 .trans::<Walking, _>(is_dashing, Dashing)
-                .trans::<Dashing, _>(done_dashing_and_idle, Idle)
-                .trans::<Dashing, _>(done_dashing_and_running, Running)
-                .trans::<Dashing, _>(done_dashing_and_walking, Walking),
+                .trans::<Dashing, _>(IntoTrigger::and(dash_timer_finished, is_idle), Idle)
+                .trans::<Dashing, _>(IntoTrigger::and(dash_timer_finished, is_running), Running)
+                .trans::<Dashing, _>(IntoTrigger::and(dash_timer_finished, is_walking), Walking),
             input_map: PlayerAction::default_input_map(),
             action_state: ActionState::<PlayerAction>::default(),
             rigid_body: RigidBody::Dynamic,

@@ -48,50 +48,9 @@ pub fn is_dashing(In(entity): In<Entity>, query: Query<&ActionState<PlayerAction
     let Ok(action_state) = query.get(entity) else {
         return false;
     };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
-        && action_state.just_pressed(&PlayerAction::Dash)
+    crate::input::MovementIntention::evaluate(action_state) == crate::input::MovementIntention::Dashing
 }
 
-pub fn done_dashing_and_idle(
-    In(entity): In<Entity>,
-    dash_query: Query<&DashTimer>,
-    action_query: Query<&ActionState<PlayerAction>>,
-) -> bool {
-    if dash_query.contains(entity) {
-        return false;
-    }
-    let Ok(action_state) = action_query.get(entity) else {
-        return false;
-    };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() == 0.0
-}
-
-pub fn done_dashing_and_running(
-    In(entity): In<Entity>,
-    dash_query: Query<&DashTimer>,
-    action_query: Query<&ActionState<PlayerAction>>,
-) -> bool {
-    if dash_query.contains(entity) {
-        return false;
-    }
-    let Ok(action_state) = action_query.get(entity) else {
-        return false;
-    };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
-        && !action_state.pressed(&PlayerAction::Walk)
-}
-
-pub fn done_dashing_and_walking(
-    In(entity): In<Entity>,
-    dash_query: Query<&DashTimer>,
-    action_query: Query<&ActionState<PlayerAction>>,
-) -> bool {
-    if dash_query.contains(entity) {
-        return false;
-    }
-    let Ok(action_state) = action_query.get(entity) else {
-        return false;
-    };
-    action_state.axis_pair(&PlayerAction::Move).length_squared() > 0.0
-        && action_state.pressed(&PlayerAction::Walk)
+pub fn dash_timer_finished(In(entity): In<Entity>, query: Query<&DashTimer>) -> bool {
+    !query.contains(entity)
 }
