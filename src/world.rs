@@ -13,22 +13,15 @@ pub fn generate_level(
 
 pub fn spawn_tiled_entities(
     mut commands: Commands,
-    query: Query<(Entity, &Transform, &Name), Added<Transform>>,
+    query: Query<(Entity, &Transform, &TiledName), Added<TiledObject>>,
     coin_config: Res<CoinConfig>,
     player_config: Res<PlayerConfig>,
     enemy_config: Res<EnemyConfig>,
 ) {
-    for (entity, transform, name) in &query {
+    for (entity, transform, tiled_name) in &query {
         let position = transform.translation.truncate();
-        let name_str = name.as_str();
-
-        let parsed_name = name_str
-            .split_once('(')
-            .and_then(|(_, inner)| inner.strip_suffix(')'))
-            .unwrap_or(name_str);
-
-        // Match against the object's Name field from Tiled
-        match parsed_name {
+        
+        match tiled_name.0.as_str() { 
             "Player" => {
                 commands
                     .entity(entity)
@@ -44,6 +37,7 @@ pub fn spawn_tiled_entities(
                     .entity(entity)
                     .insert(CoinBundle::new(1, position, &coin_config));
             }
+            // Ignore objects that don't have a recognized class
             _ => {} 
         }
     }
