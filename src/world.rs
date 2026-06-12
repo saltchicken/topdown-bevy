@@ -44,8 +44,12 @@ pub fn spawn_tiled_entities(
     }
 }
 
-pub fn on_collider_created(trigger: On<TiledEvent<ColliderCreated>>, mut commands: Commands) {
+pub fn on_collider_created(trigger: On<TiledEvent<ColliderCreated>>, mut commands: Commands, query: Query<&TiledName>) {
     let event = trigger.event();
+
+    if let Ok(name) = query.get(event.origin) {
+        info!("Layer: {:?}", name.0.as_str());
+    }
 
     if matches!(event.event.source, TiledColliderSource::TilesLayer) {
         commands.entity(event.origin).insert((
