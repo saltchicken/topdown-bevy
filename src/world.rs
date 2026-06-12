@@ -45,14 +45,14 @@ pub fn spawn_tiled_entities(
     }
 }
 
-pub fn assign_terrain_collision_layers(
+pub fn on_collider_created(
+    trigger: On<TiledEvent<ColliderCreated>>,
     mut commands: Commands,
-    // Filter out entities we already configured manually to ensure we only hit map geometry
-    query: Query<Entity, (Added<Collider>, Without<TiledObject>)>,
 ) {
-    for entity in &query {
-        info!("🛠️ DEBUG: Caught terrain collider on Entity {:?}", entity);
-        commands.entity(entity).insert((
+    let event = trigger.event();
+    
+    if matches!(event.event.source, TiledColliderSource::TilesLayer) {
+        commands.entity(event.origin).insert((
             RigidBody::Static,
             CollisionLayers::new(
                 [GameLayer::Default],

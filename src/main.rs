@@ -37,7 +37,8 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
-        .add_systems(Update, (world::spawn_tiled_entities, world::assign_terrain_collision_layers)) //TODO: Handle this in a Loading state
+        .add_systems(Update, world::spawn_tiled_entities) //TODO: Handle this in a Loading State
+        .add_observer(world::on_collider_created)
         .run();
 }
 
