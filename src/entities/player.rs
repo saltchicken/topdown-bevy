@@ -56,7 +56,6 @@ pub struct PlayerBundle {
     pub interactor: Interactor,
     pub speed: Speed,
     pub sprite: Sprite,
-    pub transform: Transform,
     pub idle: Idle,
     pub state_machine: StateMachine,
     pub input_map: InputMap<PlayerAction>,
@@ -71,7 +70,7 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(config: &PlayerConfig, position: Vec2) -> Self {
+    pub fn new(config: &PlayerConfig) -> Self {
         Self {
             player: Player,
             interactor: Interactor,
@@ -81,7 +80,6 @@ impl PlayerBundle {
                 custom_size: Some(Vec2::splat(config.size)),
                 ..default()
             },
-            transform: Transform::from_xyz(position.x, position.y, 0.0),
             idle: Idle,
             state_machine: StateMachine::default()
                 .trans::<Idle, _>(is_running, Running)

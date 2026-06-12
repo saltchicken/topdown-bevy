@@ -32,14 +32,13 @@ pub struct CoinBundle {
     pub coin: Coin,
     pub interactable: Interactable,
     pub sprite: Sprite,
-    pub transform: Transform,
     pub collider: Collider,
     pub sensor: Sensor,
     pub collision_layers: CollisionLayers,
 }
 
 impl CoinBundle {
-    pub fn new(value: u32, position: Vec2, config: &CoinConfig) -> Self {
+    pub fn new(value: u32, config: &CoinConfig) -> Self {
         Self {
             coin: Coin { value },
             interactable: Interactable,
@@ -48,7 +47,6 @@ impl CoinBundle {
                 custom_size: Some(Vec2::splat(config.size)),
                 ..default()
             },
-            transform: Transform::from_xyz(position.x, position.y, 0.0),
             collider: Collider::circle(config.collider_radius),
             sensor: Sensor,
             collision_layers: CollisionLayers::new([GameLayer::Interactable], [GameLayer::Player]),

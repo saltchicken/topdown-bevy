@@ -79,7 +79,6 @@ pub fn idle_timer_finished(In(entity): In<Entity>, query: Query<&IdleTimer>) -> 
 pub struct EnemyBundle {
     pub enemy: Enemy,
     pub sprite: Sprite,
-    pub transform: Transform,
     pub idle: Idle,
     pub state_machine: StateMachine,
     pub rigid_body: RigidBody,
@@ -95,7 +94,7 @@ pub struct EnemyBundle {
 }
 
 impl EnemyBundle {
-    pub fn new(config: &EnemyConfig, position: Vec2) -> Self {
+    pub fn new(config: &EnemyConfig) -> Self {
         Self {
             enemy: Enemy,
             sprite: Sprite {
@@ -103,7 +102,6 @@ impl EnemyBundle {
                 custom_size: Some(Vec2::splat(config.size)),
                 ..default()
             },
-            transform: Transform::from_xyz(position.x, position.y, 0.0),
             idle: Idle,
             state_machine: StateMachine::default()
                 .trans::<Idle, _>(player_in_aggro_range, Chase)

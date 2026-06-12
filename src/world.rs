@@ -15,29 +15,27 @@ pub fn generate_level(
 
 pub fn spawn_tiled_entities(
     mut commands: Commands,
-    query: Query<(Entity, &Transform, &TiledName), Added<TiledObject>>,
+    query: Query<(Entity, &TiledName), Added<TiledObject>>,
     coin_config: Res<CoinConfig>,
     player_config: Res<PlayerConfig>,
     enemy_config: Res<EnemyConfig>,
 ) {
-    for (entity, transform, tiled_name) in &query {
-        let position = transform.translation.truncate();
-        
+    for (entity, tiled_name) in &query {
         match tiled_name.0.as_str() { 
             "Player" => {
                 commands
                     .entity(entity)
-                    .insert(PlayerBundle::new(&player_config, position));
+                    .insert(PlayerBundle::new(&player_config));
             }
             "Enemy" => {
                 commands
                     .entity(entity)
-                    .insert(EnemyBundle::new(&enemy_config, position));
+                    .insert(EnemyBundle::new(&enemy_config));
             }
             "Coin" => {
                 commands
                     .entity(entity)
-                    .insert(CoinBundle::new(1, position, &coin_config));
+                    .insert(CoinBundle::new(1, &coin_config));
             }
             // Ignore objects that don't have a recognized class
             _ => {} 
