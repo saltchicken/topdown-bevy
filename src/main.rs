@@ -5,6 +5,7 @@ pub mod world;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_ecs_tiled::prelude::*;
 use entities::enemy::EnemyPlugin;
 use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
@@ -27,12 +28,14 @@ fn main() {
         }))
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(StateMachinePlugin::default())
+        .add_plugins(TiledPlugin::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(InteractablesPlugin)
         .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
+        .add_systems(Update, world::spawn_tiled_entities)
         .run();
 }
 
