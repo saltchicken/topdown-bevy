@@ -14,13 +14,17 @@ pub fn generate_level(
 }
 
 pub fn spawn_tiled_entities(
+    trigger: On<Add, TiledObject>,
     mut commands: Commands,
-    query: Query<(Entity, &TiledName), Added<TiledObject>>,
+    query: Query<&TiledName>,
     coin_config: Res<CoinConfig>,
     player_config: Res<PlayerConfig>,
     enemy_config: Res<EnemyConfig>,
 ) {
-    for (entity, tiled_name) in &query {
+    let entity = trigger.entity;
+    
+    // We fetch the TiledName associated with the entity that just received a TiledObject component
+    if let Ok(tiled_name) = query.get(entity) {
         match tiled_name.0.as_str() { 
             "Player" => {
                 commands
