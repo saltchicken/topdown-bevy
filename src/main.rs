@@ -5,6 +5,7 @@ pub mod world;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use entities::enemy::EnemyPlugin;
 use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
 use seldom_state::prelude::*;
@@ -29,6 +30,7 @@ fn main() {
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(InteractablesPlugin)
+        .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
         .run();

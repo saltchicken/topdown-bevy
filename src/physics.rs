@@ -6,4 +6,5 @@ pub enum GameLayer {
     Default,
     Player,
     Interactable,
+    Enemy,
 }
