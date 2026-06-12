@@ -1,8 +1,10 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_tiled::prelude::*;
 use crate::entities::enemy::{EnemyBundle, EnemyConfig};
 use crate::entities::interactables::coin::{CoinBundle, CoinConfig};
 use crate::entities::player::{PlayerBundle, PlayerConfig};
+use crate::physics::GameLayer;
 
 pub fn generate_level(
     mut commands: Commands,
@@ -40,5 +42,22 @@ pub fn spawn_tiled_entities(
             // Ignore objects that don't have a recognized class
             _ => {} 
         }
+    }
+}
+
+pub fn assign_terrain_collision_layers(
+    mut commands: Commands,
+    // Filter out entities we already configured manually to ensure we only hit map geometry
+    query: Query<Entity, (Added<Collider>, Without<TiledObject>)>,
+) {
+    for entity in &query {
+        info!("🛠️ DEBUG: Caught terrain collider on Entity {:?}", entity);
+        commands.entity(entity).insert((
+            RigidBody::Static,
+            CollisionLayers::new(
+                [GameLayer::Default],
+                [GameLayer::Player, GameLayer::Enemy],
+            ),
+        ));
     }
 }

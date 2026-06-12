@@ -27,15 +27,17 @@ fn main() {
             ..default()
         }))
         .add_plugins(PhysicsPlugins::default())
+        .add_plugins(PhysicsDebugPlugin::default())
         .add_plugins(StateMachinePlugin::default())
         .add_plugins(TiledPlugin::default())
+        .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(InteractablesPlugin)
         .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
-        .add_systems(Update, world::spawn_tiled_entities) //TODO: Handle this in a Loading state
+        .add_systems(Update, (world::spawn_tiled_entities, world::assign_terrain_collision_layers)) //TODO: Handle this in a Loading state
         .run();
 }
 
