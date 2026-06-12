@@ -114,6 +114,18 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>()
-            .add_plugins(PlayerStatePlugin);
+            .add_plugins(PlayerStatePlugin)
+            .add_systems(Update, camera_follow_player);
     }
+}
+
+pub fn camera_follow_player(
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    let Ok(player_transform) = player_query.single() else { return; };
+    let Ok(mut camera_transform) = camera_query.single_mut() else { return; };
+
+    camera_transform.translation.x = player_transform.translation.x;
+    camera_transform.translation.y = player_transform.translation.y;
 }
