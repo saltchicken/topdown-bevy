@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="11">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="12">
  <tileset firstgid="1" name="Base" tilewidth="32" tileheight="32" tilecount="4" columns="2">
   <image source="tilesheet.png" width="64" height="64"/>
   <tile id="3">
@@ -46,6 +46,9 @@
    <point/>
   </object>
   <object id="10" name="Light" x="200" y="200">
+   <point/>
+  </object>
+  <object id="11" name="Door" x="300" y="300">
    <point/>
   </object>
  </objectgroup>

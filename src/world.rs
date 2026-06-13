@@ -1,6 +1,7 @@
 use crate::entities::enemy::{EnemyBundle, EnemyConfig};
 use crate::entities::interactables::chest::{ChestBundle, ChestConfig};
 use crate::entities::interactables::coin::{CoinBundle, CoinConfig};
+use crate::entities::interactables::door::{DoorBundle, DoorConfig};
 use crate::entities::interactables::light::{LightBundle, LightConfig};
 use crate::entities::player::{PlayerBundle, PlayerConfig};
 use crate::physics::GameLayer;
@@ -18,6 +19,7 @@ pub fn spawn_tiled_entities(
     query: Query<&TiledName>,
     chest_config: Res<ChestConfig>,
     coin_config: Res<CoinConfig>,
+    door_config: Res<DoorConfig>,
     light_config: Res<LightConfig>,
     player_config: Res<PlayerConfig>,
     enemy_config: Res<EnemyConfig>,
@@ -51,6 +53,11 @@ pub fn spawn_tiled_entities(
                 commands
                     .entity(entity)
                     .insert(LightBundle::new(&light_config));
+            }
+            "Door" => {
+                commands
+                    .entity(entity)
+                    .insert(DoorBundle::new(&door_config));
             }
             // Ignore objects that don't have a recognized class
             _ => {}

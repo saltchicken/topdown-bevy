@@ -1,5 +1,6 @@
 pub mod chest;
 pub mod coin;
+pub mod door;
 pub mod light;
 
 use avian2d::prelude::{Collider, CollisionEnd, CollisionStart, SpatialQuery, SpatialQueryFilter};
@@ -43,6 +44,7 @@ impl Plugin for InteractablesPlugin {
             .add_observer(proximity_end_observer)
             .add_plugins(chest::ChestPlugin)
             .add_plugins(coin::CoinPlugin)
+            .add_plugins(door::DoorPlugin)
             .add_plugins(light::LightPlugin);
     }
 }
