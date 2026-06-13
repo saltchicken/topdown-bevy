@@ -1,4 +1,5 @@
 use crate::entities::enemy::{EnemyBundle, EnemyConfig};
+use crate::entities::interactables::chest::{ChestBundle, ChestConfig};
 use crate::entities::interactables::coin::{CoinBundle, CoinConfig};
 use crate::entities::player::{PlayerBundle, PlayerConfig};
 use crate::physics::GameLayer;
@@ -14,6 +15,7 @@ pub fn spawn_tiled_entities(
     trigger: On<Add, TiledObject>,
     mut commands: Commands,
     query: Query<&TiledName>,
+    chest_config: Res<ChestConfig>,
     coin_config: Res<CoinConfig>,
     player_config: Res<PlayerConfig>,
     enemy_config: Res<EnemyConfig>,
@@ -37,6 +39,11 @@ pub fn spawn_tiled_entities(
                 commands
                     .entity(entity)
                     .insert(CoinBundle::new(1, &coin_config));
+            }
+            "Chest" => {
+                commands
+                    .entity(entity)
+                    .insert(ChestBundle::new(50, &chest_config));
             }
             // Ignore objects that don't have a recognized class
             _ => {}

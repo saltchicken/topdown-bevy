@@ -7,6 +7,7 @@ pub enum PlayerAction {
     Move,
     Dash,
     Walk,
+    Interact,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -37,6 +38,7 @@ impl PlayerAction {
             .with_dual_axis(Self::Move, VirtualDPad::wasd())
             .with(Self::Dash, KeyCode::ShiftLeft)
             .with(Self::Walk, KeyCode::ControlLeft)
+            .with(Self::Interact, KeyCode::KeyE)
     }
 }
 
