@@ -15,8 +15,8 @@ impl Default for CoinConfig {
     fn default() -> Self {
         Self {
             default_value: 1,
-            size: 20.0,
-            collider_radius: 10.0,
+            size: 10.0,
+            collider_radius: 5.0,
             color: Color::srgb(1.0, 1.0, 0.0),
         }
     }

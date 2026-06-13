@@ -38,7 +38,7 @@ pub struct EnemyConfig {
 impl Default for EnemyConfig {
     fn default() -> Self {
         Self {
-            size: 40.0,
+            size: 24.0,
             patrol_speed: 100.0,
             chase_speed: 200.0,
             aggro_radius: 250.0,

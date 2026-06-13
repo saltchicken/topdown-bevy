@@ -37,7 +37,7 @@ pub struct PlayerConfig {
 impl Default for PlayerConfig {
     fn default() -> Self {
         Self {
-            size: 40.0,
+            size: 24.0,
             base_speed: 300.0,
             color_idle: Color::srgb(0.0, 1.0, 0.0),
             color_running: Color::srgb(1.0, 0.0, 0.0),
