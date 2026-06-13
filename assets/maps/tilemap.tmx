@@ -52,6 +52,9 @@
    <point/>
   </object>
   <object id="7" name="Enemy" x="254" y="521.5">
+   <properties>
+    <property name="Type" type="class" propertytype="bevy_topdown::entities::enemy::Enemy"/>
+   </properties>
    <point/>
   </object>
   <object id="8" name="Coin" x="55" y="403">

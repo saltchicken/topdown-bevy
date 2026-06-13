@@ -42,10 +42,23 @@ pub fn on_enter(
 pub fn on_update(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &mut DashTimer), With<Dashing>>,
+    mut query: Query<(Entity, &mut DashTimer, &Transform, &Sprite), With<Dashing>>,
 ) {
-    for (entity, mut timer) in &mut query {
+    for (entity, mut timer, transform, sprite) in &mut query {
         timer.0.tick(time.delta());
+
+        commands.spawn((
+            Sprite {
+                color: sprite.color.with_alpha(0.5),
+                custom_size: sprite.custom_size,
+                ..default()
+            },
+            *transform,
+            crate::effects::DashTrail {
+                timer: Timer::from_seconds(0.2, TimerMode::Once),
+            },
+        ));
+
         if timer.0.just_finished() {
             commands.entity(entity).remove::<DashTimer>();
         }

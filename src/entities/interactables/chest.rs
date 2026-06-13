@@ -80,14 +80,36 @@ fn on_add_chest(trigger: On<Add, Chest>, mut commands: Commands, config: Res<Che
 
 fn on_interact_chest(
     trigger: On<InteractedEvent>,
-    mut chest_query: Query<(&mut Chest, &mut Sprite)>,
+    mut commands: Commands,
+    mut chest_query: Query<(&mut Chest, &mut Sprite, &Transform)>,
+    mut shake_query: Query<&mut crate::effects::CameraShake>,
     config: Res<ChestConfig>,
 ) {
-    if let Ok((mut chest, mut sprite)) = chest_query.get_mut(trigger.entity) {
+    if let Ok((mut chest, mut sprite, transform)) = chest_query.get_mut(trigger.entity) {
         if !chest.is_open {
             chest.is_open = true;
             sprite.color = config.open_color;
             info!("Opened a chest and found {} gold!", chest.gold_content);
+            commands.trigger(crate::ui::GoldGained(chest.gold_content));
+
+            commands.spawn((
+                Text2d::new(format!("+{} Gold", chest.gold_content)),
+                TextFont {
+                    font_size: 28.0,
+                    ..default()
+                },
+                TextColor(Color::srgb(1.0, 0.8, 0.0)),
+                *transform,
+                crate::effects::FloatingText {
+                    velocity: bevy::math::Vec2::new(0.0, 60.0),
+                    timer: Timer::from_seconds(1.5, TimerMode::Once),
+                },
+            ));
+
+            if let Ok(mut shake) = shake_query.single_mut() {
+                shake.intensity = 15.0;
+                shake.timer = Timer::from_seconds(0.3, TimerMode::Once);
+            }
         }
     }
 }

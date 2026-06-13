@@ -125,8 +125,10 @@ fn on_add_player(trigger: On<Add, Player>, mut commands: Commands, config: Res<P
 }
 
 pub fn camera_follow_player(
+    time: Res<Time>,
     mut camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
+    shake_query: Query<&crate::effects::CameraShake>,
 ) {
     let Ok(player_transform) = player_query.single() else {
         return;
@@ -135,6 +137,17 @@ pub fn camera_follow_player(
         return;
     };
 
-    camera_transform.translation.x = player_transform.translation.x;
-    camera_transform.translation.y = player_transform.translation.y;
+    let mut offset_x = 0.0;
+    let mut offset_y = 0.0;
+
+    if let Ok(shake) = shake_query.single() {
+        if !shake.timer.is_finished() {
+            let intensity = shake.intensity * shake.timer.fraction_remaining();
+            offset_x = (time.elapsed_secs() * 50.0).sin() * intensity;
+            offset_y = (time.elapsed_secs() * 60.0).cos() * intensity;
+        }
+    }
+
+    camera_transform.translation.x = player_transform.translation.x + offset_x;
+    camera_transform.translation.y = player_transform.translation.y + offset_y;
 }

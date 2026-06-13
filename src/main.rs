@@ -1,6 +1,8 @@
 pub mod entities;
 pub mod input;
+pub mod effects;
 pub mod physics;
+pub mod ui;
 pub mod world;
 
 use avian2d::prelude::*;
@@ -33,11 +35,19 @@ fn main() {
         .add_plugins(PlayerPlugin)
         .add_plugins(InteractablesPlugin)
         .add_plugins(EnemyPlugin)
+        .add_plugins(effects::EffectsPlugin)
+        .add_plugins(ui::UiPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, setup_scene)
         .run();
 }
 
 fn setup_scene(mut commands: Commands) {
-    commands.spawn(Camera2d);
+    commands.spawn((
+        Camera2d,
+        effects::CameraShake {
+            intensity: 0.0,
+            timer: Timer::from_seconds(0.0, TimerMode::Once),
+        },
+    ));
 }

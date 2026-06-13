@@ -73,11 +73,27 @@ fn on_add_coin(trigger: On<Add, Coin>, mut commands: Commands, config: Res<CoinC
 fn handle_coin_interactions(
     trigger: On<CollectedEvent>,
     mut commands: Commands,
-    coin_query: Query<&Coin>,
+    coin_query: Query<(&Coin, &Transform)>,
 ) {
     let interactable = trigger.entity;
-    if let Ok(coin) = coin_query.get(interactable) {
+    if let Ok((coin, transform)) = coin_query.get(interactable) {
         info!("Collected a coin worth {}!", coin.value);
+        commands.trigger(crate::ui::GoldGained(coin.value));
+
+        commands.spawn((
+            Text2d::new(format!("+{}", coin.value)),
+            TextFont {
+                font_size: 24.0,
+                ..default()
+            },
+            TextColor(Color::srgb(1.0, 1.0, 0.0)),
+            *transform,
+            crate::effects::FloatingText {
+                velocity: bevy::math::Vec2::new(0.0, 50.0),
+                timer: Timer::from_seconds(1.0, TimerMode::Once),
+            },
+        ));
+
         commands.entity(interactable).despawn();
     }
 }
