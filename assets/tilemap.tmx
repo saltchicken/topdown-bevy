@@ -45,5 +45,8 @@
   <object id="9" name="Chest" x="160" y="320">
    <point/>
   </object>
+  <object id="10" name="Light" x="200" y="200">
+   <point/>
+  </object>
  </objectgroup>
 </map>

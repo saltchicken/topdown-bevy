@@ -1,5 +1,6 @@
 pub mod chest;
 pub mod coin;
+pub mod light;
 
 use avian2d::prelude::CollisionStart;
 use bevy::prelude::*;
@@ -22,7 +23,8 @@ impl Plugin for InteractablesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, detect_interactions)
             .add_plugins(chest::ChestPlugin)
-            .add_plugins(coin::CoinPlugin);
+            .add_plugins(coin::CoinPlugin)
+            .add_plugins(light::LightPlugin);
     }
 }
 
