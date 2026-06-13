@@ -1,1 +1,4 @@
 /target
+
+# Tiled
+*.tiled-session

@@ -30,7 +30,7 @@ pub struct EnvironmentLayer {
 }
 
 pub fn generate_level(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(TiledMap(asset_server.load("tilemap.tmx")));
+    commands.spawn(TiledMap(asset_server.load("maps/tilemap.tmx")));
 }
 
 pub fn on_add_environment_layer(

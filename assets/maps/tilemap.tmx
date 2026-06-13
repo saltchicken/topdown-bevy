@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="16">
  <tileset firstgid="1" name="Base" tilewidth="32" tileheight="32" tilecount="4" columns="2">
-  <image source="tilesheet.png" width="64" height="64"/>
+  <image source="../textures/tilesets/tilesheet.png" width="64" height="64"/>
   <tile id="1">
    <objectgroup draworder="index" id="2">
     <object id="1" x="0" y="0" width="32" height="32"/>
@@ -74,7 +74,7 @@
    </properties>
    <point/>
   </object>
-  <object id="10" name="Light" type="Light" x="200" y="200">
+  <object id="10" name="Light" type="Light" x="224" y="192">
    <point/>
   </object>
   <object id="14" name="Door" gid="2" x="160" y="448" width="32" height="32">
