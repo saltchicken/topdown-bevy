@@ -11,6 +11,7 @@ use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
 use seldom_state::prelude::*;
 use world::generate_level;
+use world::EnvironmentLayer;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
@@ -29,10 +30,11 @@ fn main() {
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(PhysicsDebugPlugin::default())
         .add_plugins(StateMachinePlugin::default())
+        .register_type::<EnvironmentLayer>()
         .add_plugins(TiledPlugin(TiledPluginConfig {
             tiled_types_export_file: Some("assets/tiled_types.json".into()),
             tiled_types_filter: TiledFilter::from(
-                regex::RegexSet::new([r"^bevy_topdown::entities::.*"]).unwrap(),
+                regex::RegexSet::new([r"^bevy_topdown::entities::.*",r"^bevy_topdown::world::.*"]).unwrap(),
             ),
             ..default()
         }))
@@ -43,8 +45,7 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
-        // Replaced the Update system with an observer
-        .add_observer(world::on_collider_created)
+        .add_observer(world::on_add_environment_layer)
         .run();
 }
 

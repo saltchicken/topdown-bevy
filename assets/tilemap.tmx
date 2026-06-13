@@ -14,6 +14,13 @@
   </tile>
  </tileset>
  <layer id="1" name="Tile Layer 1" width="30" height="20">
+  <properties>
+   <property name="Layer" type="class" propertytype="bevy_topdown::world::EnvironmentLayer">
+    <properties>
+     <property name="friction" type="float" value="0"/>
+    </properties>
+   </property>
+  </properties>
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -58,12 +65,23 @@
    <point/>
   </object>
   <object id="9" name="Chest" x="128" y="288">
+   <properties>
+    <property name="Chest" type="class" propertytype="bevy_topdown::entities::interactables::chest::Chest">
+     <properties>
+      <property name="gold_content" type="int" value="22"/>
+     </properties>
+    </property>
+   </properties>
    <point/>
   </object>
   <object id="10" name="Light" type="Light" x="200" y="200">
    <point/>
   </object>
-  <object id="14" name="Door" gid="2" x="160" y="448" width="32" height="32"/>
+  <object id="14" name="Door" gid="2" x="160" y="448" width="32" height="32">
+   <properties>
+    <property name="Entity" type="class" propertytype="bevy_topdown::entities::interactables::door::Door"/>
+   </properties>
+  </object>
   <object id="15" x="96" y="64">
    <point/>
   </object>

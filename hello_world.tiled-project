@@ -106,6 +106,28 @@
             "useAs": [
                 "property"
             ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "friction",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "is_sensor",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "bevy_topdown::world::EnvironmentLayer",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
         }
     ]
 }
