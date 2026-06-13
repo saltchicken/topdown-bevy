@@ -1,0 +1,111 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+            ],
+            "name": "bevy_topdown::entities::enemy::Enemy",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 2,
+            "members": [
+                {
+                    "name": "gold_content",
+                    "type": "int",
+                    "value": 10
+                },
+                {
+                    "name": "is_open",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "bevy_topdown::entities::interactables::chest::Chest",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "value",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "bevy_topdown::entities::interactables::coin::Coin",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+                {
+                    "name": "is_open",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "bevy_topdown::entities::interactables::door::Door",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 5,
+            "members": [
+                {
+                    "name": "is_on",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "bevy_topdown::entities::interactables::light::Light",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ff000000",
+            "drawFill": true,
+            "id": 6,
+            "members": [
+            ],
+            "name": "bevy_topdown::entities::player::Player",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        }
+    ]
+}

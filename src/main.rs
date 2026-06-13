@@ -29,7 +29,13 @@ fn main() {
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(PhysicsDebugPlugin::default())
         .add_plugins(StateMachinePlugin::default())
-        .add_plugins(TiledPlugin::default())
+        .add_plugins(TiledPlugin(TiledPluginConfig {
+            tiled_types_export_file: Some("assets/tiled_types.json".into()),
+            tiled_types_filter: TiledFilter::from(
+                regex::RegexSet::new([r"^bevy_topdown::entities::.*"]).unwrap(),
+            ),
+            ..default()
+        }))
         .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(PlayerPlugin)
@@ -38,7 +44,6 @@ fn main() {
         .insert_resource(Gravity(Vec2::ZERO))
         .add_systems(Startup, (setup_scene, generate_level))
         // Replaced the Update system with an observer
-        .add_observer(world::spawn_tiled_entities)
         .add_observer(world::on_collider_created)
         .run();
 }

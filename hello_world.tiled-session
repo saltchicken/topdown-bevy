@@ -1,0 +1,30 @@
+{
+    "activeFile": "assets/tilemap.tmx",
+    "expandedProjectPaths": [
+        ".",
+        "assets"
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "assets/tilemap.tmx": {
+            "scale": 0.5779166666666666,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 479.30785868781544,
+                "y": 320.115356885364
+            }
+        },
+        "assets/tilemap.tmx#Base": {
+            "scaleInDock": 1
+        }
+    },
+    "last.objectTypesPath": "/home/saltchicken/Projects/bevy-topdown/assets/tiled_types.json",
+    "openFiles": [
+        "assets/tilemap.tmx"
+    ],
+    "project": "hello_world.tiled-project",
+    "property.type": "bevy_topdown::entities::player::Player",
+    "recentFiles": [
+        "assets/tilemap.tmx"
+    ]
+}

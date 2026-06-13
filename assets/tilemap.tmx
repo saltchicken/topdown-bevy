@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="15">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="16">
  <tileset firstgid="1" name="Base" tilewidth="32" tileheight="32" tilecount="4" columns="2">
   <image source="tilesheet.png" width="64" height="64"/>
   <tile id="1">
@@ -39,20 +39,33 @@
  </layer>
  <objectgroup id="2" name="Entities">
   <object id="6" name="Player" x="457" y="196">
+   <properties>
+    <property name="Player" type="class" propertytype="bevy_topdown::entities::player::Player"/>
+   </properties>
    <point/>
   </object>
   <object id="7" name="Enemy" x="254" y="521.5">
    <point/>
   </object>
   <object id="8" name="Coin" x="55" y="403">
+   <properties>
+    <property name="Coin" type="class" propertytype="bevy_topdown::entities::interactables::coin::Coin">
+     <properties>
+      <property name="value" type="int" value="5"/>
+     </properties>
+    </property>
+   </properties>
    <point/>
   </object>
   <object id="9" name="Chest" x="128" y="288">
    <point/>
   </object>
-  <object id="10" name="Light" x="200" y="200">
+  <object id="10" name="Light" type="Light" x="200" y="200">
    <point/>
   </object>
   <object id="14" name="Door" gid="2" x="160" y="448" width="32" height="32"/>
+  <object id="15" x="96" y="64">
+   <point/>
+  </object>
  </objectgroup>
 </map>

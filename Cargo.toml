@@ -8,4 +8,4 @@ bevy = { version = "0.18", features = ["wayland"] }
 seldom_state = "0.16.0"
 leafwing-input-manager = "0.20"
 avian2d = "0.6.1"
-bevy_ecs_tiled = { version = "0.12", features = ["avian"] }
+bevy_ecs_tiled = { version = "0.12", features = ["avian", "user_properties"] }

@@ -13,6 +13,7 @@ use self::states::idle::*;
 use self::states::patrol::*;
 
 #[derive(Component, Default, Reflect)]
+#[reflect(Component, Default)]
 pub struct Enemy;
 
 #[derive(Component, Reflect)]
@@ -94,7 +95,6 @@ pub fn idle_timer_finished(In(entity): In<Entity>, query: Query<&IdleTimer>) -> 
 
 #[derive(Bundle)]
 pub struct EnemyBundle {
-    pub enemy: Enemy,
     pub sprite: Sprite,
     pub idle: Idle,
     pub state_machine: StateMachine,
@@ -113,7 +113,6 @@ pub struct EnemyBundle {
 impl EnemyBundle {
     pub fn new(config: &EnemyConfig) -> Self {
         Self {
-            enemy: Enemy,
             sprite: Sprite {
                 color: config.color_idle,
                 custom_size: Some(Vec2::splat(config.size)),
@@ -152,6 +151,12 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<EnemyConfig>()
+            .register_type::<Enemy>()
+            .add_observer(on_add_enemy)
             .add_plugins(EnemyStatePlugin);
     }
+}
+
+fn on_add_enemy(trigger: On<Add, Enemy>, mut commands: Commands, config: Res<EnemyConfig>) {
+    commands.entity(trigger.entity).insert(EnemyBundle::new(&config));
 }

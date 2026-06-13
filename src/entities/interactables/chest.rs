@@ -21,6 +21,7 @@ impl Default for ChestConfig {
 }
 
 #[derive(Component, Reflect)]
+#[reflect(Component, Default)]
 pub struct Chest {
     pub is_open: bool,
     pub gold_content: u32,
@@ -37,7 +38,6 @@ impl Default for Chest {
 
 #[derive(Bundle)]
 pub struct ChestBundle {
-    pub chest: Chest,
     pub active_interact: ActiveInteract,
     pub sprite: Sprite,
     pub rigid_body: RigidBody,
@@ -46,12 +46,8 @@ pub struct ChestBundle {
 }
 
 impl ChestBundle {
-    pub fn new(gold_content: u32, config: &ChestConfig) -> Self {
+    pub fn new(config: &ChestConfig) -> Self {
         Self {
-            chest: Chest {
-                is_open: false,
-                gold_content,
-            },
             active_interact: ActiveInteract,
             sprite: Sprite {
                 color: config.closed_color,
@@ -70,8 +66,14 @@ pub struct ChestPlugin;
 impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ChestConfig>()
+            .register_type::<Chest>()
+            .add_observer(on_add_chest)
             .add_observer(on_interact_chest);
     }
+}
+
+fn on_add_chest(trigger: On<Add, Chest>, mut commands: Commands, config: Res<ChestConfig>) {
+    commands.entity(trigger.entity).insert(ChestBundle::new(&config));
 }
 
 fn on_interact_chest(

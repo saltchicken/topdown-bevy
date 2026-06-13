@@ -15,6 +15,7 @@ use self::states::running::*;
 use self::states::walking::*;
 
 #[derive(Component, Default, Reflect)]
+#[reflect(Component, Default)]
 pub struct Player;
 
 #[derive(Component, Reflect)]
@@ -51,7 +52,6 @@ impl Default for PlayerConfig {
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
-    pub player: Player,
     pub speed: Speed,
     pub sprite: Sprite,
     pub idle: Idle,
@@ -70,7 +70,6 @@ pub struct PlayerBundle {
 impl PlayerBundle {
     pub fn new(config: &PlayerConfig) -> Self {
         Self {
-            player: Player,
             speed: Speed(config.base_speed),
             sprite: Sprite {
                 color: config.color_idle,
@@ -112,9 +111,15 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>()
+            .register_type::<Player>()
+            .add_observer(on_add_player)
             .add_plugins(PlayerStatePlugin)
             .add_systems(Update, camera_follow_player);
     }
+}
+
+fn on_add_player(trigger: On<Add, Player>, mut commands: Commands, config: Res<PlayerConfig>) {
+    commands.entity(trigger.entity).insert(PlayerBundle::new(&config));
 }
 
 pub fn camera_follow_player(

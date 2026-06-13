@@ -23,13 +23,13 @@ impl Default for CoinConfig {
 }
 
 #[derive(Component, Default, Reflect)]
+#[reflect(Component, Default)]
 pub struct Coin {
     pub value: u32,
 }
 
 #[derive(Bundle)]
 pub struct CoinBundle {
-    pub coin: Coin,
     pub auto_collect: AutoCollect,
     pub sprite: Sprite,
     pub collider: Collider,
@@ -38,9 +38,8 @@ pub struct CoinBundle {
 }
 
 impl CoinBundle {
-    pub fn new(value: u32, config: &CoinConfig) -> Self {
+    pub fn new(config: &CoinConfig) -> Self {
         Self {
-            coin: Coin { value },
             auto_collect: AutoCollect,
             sprite: Sprite {
                 color: config.color,
@@ -59,8 +58,14 @@ pub struct CoinPlugin;
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CoinConfig>()
+            .register_type::<Coin>()
+            .add_observer(on_add_coin)
             .add_observer(handle_coin_interactions);
     }
+}
+
+fn on_add_coin(trigger: On<Add, Coin>, mut commands: Commands, config: Res<CoinConfig>) {
+    commands.entity(trigger.entity).insert(CoinBundle::new(&config));
 }
 
 fn handle_coin_interactions(

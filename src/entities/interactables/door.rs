@@ -4,6 +4,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 #[derive(Component, Reflect)]
+#[reflect(Component, Default)]
 pub struct Door {
     pub is_open: bool,
 }
@@ -16,7 +17,6 @@ impl Default for Door {
 
 #[derive(Bundle)]
 pub struct DoorBundle {
-    pub door: Door,
     pub active_interact: ActiveInteract,
     pub rigid_body: RigidBody,
     pub collision_layers: CollisionLayers,
@@ -25,7 +25,6 @@ pub struct DoorBundle {
 impl DoorBundle {
     pub fn new() -> Self {
         Self {
-            door: Door { is_open: false },
             active_interact: ActiveInteract,
             rigid_body: RigidBody::Static,
             collision_layers: CollisionLayers::new(
@@ -40,8 +39,14 @@ pub struct DoorPlugin;
 
 impl Plugin for DoorPlugin {
     fn build(&self, app: &mut App) {
-          app.add_observer(on_interact_door);
+        app.register_type::<Door>()
+            .add_observer(on_add_door)
+            .add_observer(on_interact_door);
     }
+}
+
+fn on_add_door(trigger: On<Add, Door>, mut commands: Commands) {
+    commands.entity(trigger.entity).insert(DoorBundle::new());
 }
 
 fn on_interact_door(

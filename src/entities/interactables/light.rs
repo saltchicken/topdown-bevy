@@ -21,6 +21,7 @@ impl Default for LightConfig {
 }
 
 #[derive(Component, Reflect)]
+#[reflect(Component, Default)]
 pub struct Light {
     pub is_on: bool,
 }
@@ -33,7 +34,6 @@ impl Default for Light {
 
 #[derive(Bundle)]
 pub struct LightBundle {
-    pub light: Light,
     pub proximity_trigger: ProximityTrigger,
     pub sprite: Sprite,
     pub rigid_body: RigidBody,
@@ -45,7 +45,6 @@ pub struct LightBundle {
 impl LightBundle {
     pub fn new(config: &LightConfig) -> Self {
         Self {
-            light: Light { is_on: false },
             proximity_trigger: ProximityTrigger,
             sprite: Sprite {
                 color: config.off_color,
@@ -65,8 +64,14 @@ pub struct LightPlugin;
 impl Plugin for LightPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<LightConfig>()
+            .register_type::<Light>()
+            .add_observer(on_add_light)
             .add_observer(handle_light_proximity);
     }
+}
+
+fn on_add_light(trigger: On<Add, Light>, mut commands: Commands, config: Res<LightConfig>) {
+    commands.entity(trigger.entity).insert(LightBundle::new(&config));
 }
 
 fn handle_light_proximity(
