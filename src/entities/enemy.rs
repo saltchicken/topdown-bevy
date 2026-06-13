@@ -158,5 +158,7 @@ impl Plugin for EnemyPlugin {
 }
 
 fn on_add_enemy(trigger: On<Add, Enemy>, mut commands: Commands, config: Res<EnemyConfig>) {
-    commands.entity(trigger.entity).insert(EnemyBundle::new(&config));
+    commands
+        .entity(trigger.entity)
+        .insert(EnemyBundle::new(&config));
 }

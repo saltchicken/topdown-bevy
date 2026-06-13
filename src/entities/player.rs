@@ -119,7 +119,9 @@ impl Plugin for PlayerPlugin {
 }
 
 fn on_add_player(trigger: On<Add, Player>, mut commands: Commands, config: Res<PlayerConfig>) {
-    commands.entity(trigger.entity).insert(PlayerBundle::new(&config));
+    commands
+        .entity(trigger.entity)
+        .insert(PlayerBundle::new(&config));
 }
 
 pub fn camera_follow_player(

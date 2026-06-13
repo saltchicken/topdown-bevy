@@ -5,7 +5,6 @@ pub mod world;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_ecs_tiled::prelude::*;
 use entities::enemy::EnemyPlugin;
 use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
@@ -29,14 +28,6 @@ fn main() {
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(PhysicsDebugPlugin::default())
         .add_plugins(StateMachinePlugin::default())
-        .add_plugins(TiledPlugin(TiledPluginConfig {
-            tiled_types_export_file: Some("assets/tiled_types.json".into()),
-            tiled_types_filter: TiledFilter::from(
-                regex::RegexSet::new([r"^bevy_topdown::entities::.*",r"^bevy_topdown::world::.*"]).unwrap(),
-            ),
-            ..default()
-        }))
-        .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
         .add_plugins(input::GameInputPlugin)
         .add_plugins(WorldPlugin)
         .add_plugins(PlayerPlugin)

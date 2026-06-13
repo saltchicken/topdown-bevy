@@ -71,7 +71,9 @@ impl Plugin for LightPlugin {
 }
 
 fn on_add_light(trigger: On<Add, Light>, mut commands: Commands, config: Res<LightConfig>) {
-    commands.entity(trigger.entity).insert(LightBundle::new(&config));
+    commands
+        .entity(trigger.entity)
+        .insert(LightBundle::new(&config));
 }
 
 fn handle_light_proximity(

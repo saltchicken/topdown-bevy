@@ -59,14 +59,14 @@ pub fn auto_collect_observer(
     let e1 = collision.collider1;
     let e2 = collision.collider2;
 
-    let (interactor, interactable) =
-        if player_query.contains(e1) && interactable_query.contains(e2) {
-            (e1, e2)
-        } else if player_query.contains(e2) && interactable_query.contains(e1) {
-            (e2, e1)
-        } else {
-            return;
-        };
+    let (interactor, interactable) = if player_query.contains(e1) && interactable_query.contains(e2)
+    {
+        (e1, e2)
+    } else if player_query.contains(e2) && interactable_query.contains(e1) {
+        (e2, e1)
+    } else {
+        return;
+    };
 
     commands
         .entity(interactable)
@@ -98,12 +98,10 @@ pub fn active_interact_system(
 
             for entity in intersections {
                 if interactable_query.contains(entity) {
-                    commands
-                        .entity(entity)
-                        .trigger(|entity| InteractedEvent {
-                            entity,
-                            interactor: player_entity,
-                        });
+                    commands.entity(entity).trigger(|entity| InteractedEvent {
+                        entity,
+                        interactor: player_entity,
+                    });
                 }
             }
         }
@@ -119,14 +117,14 @@ pub fn proximity_start_observer(
     let collision = trigger.event();
     let e1 = collision.collider1;
     let e2 = collision.collider2;
-    let (interactor, interactable) =
-        if player_query.contains(e1) && interactable_query.contains(e2) {
-            (e1, e2)
-        } else if player_query.contains(e2) && interactable_query.contains(e1) {
-            (e2, e1)
-        } else {
-            return;
-        };
+    let (interactor, interactable) = if player_query.contains(e1) && interactable_query.contains(e2)
+    {
+        (e1, e2)
+    } else if player_query.contains(e2) && interactable_query.contains(e1) {
+        (e2, e1)
+    } else {
+        return;
+    };
     commands
         .entity(interactable)
         .trigger(|entity| ProximityEvent {
@@ -145,14 +143,14 @@ pub fn proximity_end_observer(
     let collision = trigger.event();
     let e1 = collision.collider1;
     let e2 = collision.collider2;
-    let (interactor, interactable) =
-        if player_query.contains(e1) && interactable_query.contains(e2) {
-            (e1, e2)
-        } else if player_query.contains(e2) && interactable_query.contains(e1) {
-            (e2, e1)
-        } else {
-            return;
-        };
+    let (interactor, interactable) = if player_query.contains(e1) && interactable_query.contains(e2)
+    {
+        (e1, e2)
+    } else if player_query.contains(e2) && interactable_query.contains(e1) {
+        (e2, e1)
+    } else {
+        return;
+    };
     commands
         .entity(interactable)
         .trigger(|entity| ProximityEvent {

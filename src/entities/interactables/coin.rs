@@ -65,7 +65,9 @@ impl Plugin for CoinPlugin {
 }
 
 fn on_add_coin(trigger: On<Add, Coin>, mut commands: Commands, config: Res<CoinConfig>) {
-    commands.entity(trigger.entity).insert(CoinBundle::new(&config));
+    commands
+        .entity(trigger.entity)
+        .insert(CoinBundle::new(&config));
 }
 
 fn handle_coin_interactions(

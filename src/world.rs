@@ -7,9 +7,18 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<EnvironmentLayer>()
-            .add_systems(Startup, generate_level)
-            .add_observer(on_add_environment_layer);
+        app.add_plugins(TiledPlugin(TiledPluginConfig {
+            tiled_types_export_file: Some("assets/tiled_types.json".into()),
+            tiled_types_filter: TiledFilter::from(
+                regex::RegexSet::new([r"^bevy_topdown::entities::.*", r"^bevy_topdown::world::.*"])
+                    .unwrap(),
+            ),
+            ..default()
+        }))
+        .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
+        .register_type::<EnvironmentLayer>()
+        .add_systems(Startup, generate_level)
+        .add_observer(on_add_environment_layer);
     }
 }
 

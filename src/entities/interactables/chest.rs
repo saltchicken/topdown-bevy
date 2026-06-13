@@ -73,7 +73,9 @@ impl Plugin for ChestPlugin {
 }
 
 fn on_add_chest(trigger: On<Add, Chest>, mut commands: Commands, config: Res<ChestConfig>) {
-    commands.entity(trigger.entity).insert(ChestBundle::new(&config));
+    commands
+        .entity(trigger.entity)
+        .insert(ChestBundle::new(&config));
 }
 
 fn on_interact_chest(
