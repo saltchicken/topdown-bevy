@@ -8,7 +8,7 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(TiledPlugin(TiledPluginConfig {
-            tiled_types_export_file: Some("assets/tiled_types.json".into()),
+            tiled_types_export_file: Some("assets/data/tiled_types.json".into()),
             tiled_types_filter: TiledFilter::from(
                 regex::RegexSet::new([r"^bevy_topdown::entities::.*", r"^bevy_topdown::world::.*"])
                     .unwrap(),
