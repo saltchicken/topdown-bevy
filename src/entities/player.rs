@@ -93,7 +93,7 @@ impl PlayerBundle {
             input_map: PlayerAction::default_input_map(),
             action_state: ActionState::<PlayerAction>::default(),
             rigid_body: RigidBody::Dynamic,
-            collider: Collider::rectangle(config.size, config.size),
+            collider: Collider::circle(config.size / 2.0),
             locked_axes: LockedAxes::ROTATION_LOCKED,
             linear_velocity: LinearVelocity::default(),
             linear_damping: LinearDamping(5.0),
