@@ -7,7 +7,7 @@ pub enum PlayerAction {
     Move,
     Dash,
     Walk,
-    Interact,
+    Interact, // Mapped to E for active interactions
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]

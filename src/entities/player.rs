@@ -5,7 +5,6 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 use seldom_state::prelude::*;
 
-use crate::entities::interactables::Interactor;
 use crate::input::PlayerAction;
 use crate::physics::GameLayer;
 
@@ -53,7 +52,6 @@ impl Default for PlayerConfig {
 #[derive(Bundle)]
 pub struct PlayerBundle {
     pub player: Player,
-    pub interactor: Interactor,
     pub speed: Speed,
     pub sprite: Sprite,
     pub idle: Idle,
@@ -73,7 +71,6 @@ impl PlayerBundle {
     pub fn new(config: &PlayerConfig) -> Self {
         Self {
             player: Player,
-            interactor: Interactor,
             speed: Speed(config.base_speed),
             sprite: Sprite {
                 color: config.color_idle,

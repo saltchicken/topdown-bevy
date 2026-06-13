@@ -1,4 +1,4 @@
-use super::{Interactable, InteractionEvent};
+use super::{AutoCollect, CollectedEvent};
 use crate::physics::GameLayer;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -30,7 +30,7 @@ pub struct Coin {
 #[derive(Bundle)]
 pub struct CoinBundle {
     pub coin: Coin,
-    pub interactable: Interactable,
+    pub auto_collect: AutoCollect,
     pub sprite: Sprite,
     pub collider: Collider,
     pub sensor: Sensor,
@@ -41,7 +41,7 @@ impl CoinBundle {
     pub fn new(value: u32, config: &CoinConfig) -> Self {
         Self {
             coin: Coin { value },
-            interactable: Interactable,
+            auto_collect: AutoCollect,
             sprite: Sprite {
                 color: config.color,
                 custom_size: Some(Vec2::splat(config.size)),
@@ -64,7 +64,7 @@ impl Plugin for CoinPlugin {
 }
 
 fn handle_coin_interactions(
-    trigger: On<InteractionEvent>,
+    trigger: On<CollectedEvent>,
     mut commands: Commands,
     coin_query: Query<&Coin>,
 ) {

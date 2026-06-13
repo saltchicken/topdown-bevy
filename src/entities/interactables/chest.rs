@@ -1,10 +1,7 @@
-use super::Interactable;
-use crate::entities::player::Player;
-use crate::input::PlayerAction;
+use super::{ActiveInteract, InteractedEvent};
 use crate::physics::GameLayer;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use leafwing_input_manager::prelude::*;
 
 #[derive(Resource)]
 pub struct ChestConfig {
@@ -41,7 +38,7 @@ impl Default for Chest {
 #[derive(Bundle)]
 pub struct ChestBundle {
     pub chest: Chest,
-    pub interactable: Interactable,
+    pub active_interact: ActiveInteract,
     pub sprite: Sprite,
     pub rigid_body: RigidBody,
     pub collider: Collider,
@@ -55,7 +52,7 @@ impl ChestBundle {
                 is_open: false,
                 gold_content,
             },
-            interactable: Interactable,
+            active_interact: ActiveInteract,
             sprite: Sprite {
                 color: config.closed_color,
                 custom_size: Some(Vec2::splat(config.size)),
@@ -73,28 +70,20 @@ pub struct ChestPlugin;
 impl Plugin for ChestPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ChestConfig>()
-            .add_systems(Update, handle_chest_interactions);
+            .add_observer(on_interact_chest);
     }
 }
 
-fn handle_chest_interactions(
-    mut chest_query: Query<(&mut Chest, &mut Sprite, &Transform)>,
-    player_query: Query<(&ActionState<PlayerAction>, &Transform), With<Player>>,
+fn on_interact_chest(
+    trigger: On<InteractedEvent>,
+    mut chest_query: Query<(&mut Chest, &mut Sprite)>,
     config: Res<ChestConfig>,
 ) {
-    let interact_range = config.size * 2.0;
-
-    for (action_state, player_transform) in &player_query {
-        if action_state.just_pressed(&PlayerAction::Interact) {
-            for (mut chest, mut sprite, chest_transform) in &mut chest_query {
-                if player_transform.translation.distance(chest_transform.translation) <= interact_range {
-                    if !chest.is_open {
-                        chest.is_open = true;
-                        sprite.color = config.open_color;
-                        info!("Opened a chest and found {} gold!", chest.gold_content);
-                    }
-                }
-            }
+    if let Ok((mut chest, mut sprite)) = chest_query.get_mut(trigger.entity) {
+        if !chest.is_open {
+            chest.is_open = true;
+            sprite.color = config.open_color;
+            info!("Opened a chest and found {} gold!", chest.gold_content);
         }
     }
 }

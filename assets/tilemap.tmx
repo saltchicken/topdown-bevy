@@ -33,7 +33,7 @@
 </data>
  </layer>
  <objectgroup id="2" name="Entities">
-  <object id="6" name="Player" x="16" y="628">
+  <object id="6" name="Player" x="457" y="196">
    <point/>
   </object>
   <object id="7" name="Enemy" x="254" y="521.5">
