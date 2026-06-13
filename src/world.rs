@@ -3,6 +3,16 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_tiled::prelude::*;
 
+pub struct WorldPlugin;
+
+impl Plugin for WorldPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<EnvironmentLayer>()
+            .add_systems(Startup, generate_level)
+            .add_observer(on_add_environment_layer);
+    }
+}
+
 #[derive(Component, Default, Reflect)]
 #[reflect(Component, Default)]
 pub struct EnvironmentLayer {

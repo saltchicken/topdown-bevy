@@ -10,8 +10,7 @@ use entities::enemy::EnemyPlugin;
 use entities::interactables::InteractablesPlugin;
 use entities::player::PlayerPlugin;
 use seldom_state::prelude::*;
-use world::generate_level;
-use world::EnvironmentLayer;
+use world::WorldPlugin;
 
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 720;
@@ -30,7 +29,6 @@ fn main() {
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(PhysicsDebugPlugin::default())
         .add_plugins(StateMachinePlugin::default())
-        .register_type::<EnvironmentLayer>()
         .add_plugins(TiledPlugin(TiledPluginConfig {
             tiled_types_export_file: Some("assets/tiled_types.json".into()),
             tiled_types_filter: TiledFilter::from(
@@ -40,12 +38,12 @@ fn main() {
         }))
         .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
         .add_plugins(input::GameInputPlugin)
+        .add_plugins(WorldPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(InteractablesPlugin)
         .add_plugins(EnemyPlugin)
         .insert_resource(Gravity(Vec2::ZERO))
-        .add_systems(Startup, (setup_scene, generate_level))
-        .add_observer(world::on_add_environment_layer)
+        .add_systems(Startup, setup_scene)
         .run();
 }
 
